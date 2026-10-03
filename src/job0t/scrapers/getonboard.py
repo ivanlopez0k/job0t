@@ -118,7 +118,10 @@ class GetOnBoardScraper(BaseScraper):
                     url=url,
                     source=self.name,
                     published_at_raw=published_at_raw,
-                    raw_payload={"id": item.get("id")},
+                    raw_payload={
+                        "id": item.get("id"),
+                        "seniority_id": attrs.get("seniority", {}).get("data", {}).get("id") if isinstance(attrs.get("seniority"), dict) else None,
+                    },
                 )
             )
 

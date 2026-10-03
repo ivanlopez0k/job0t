@@ -75,3 +75,37 @@ def test_pipeline_runner_full_cycle(tmp_path: Path):
     assert stats.total_unique == 2
     assert stats.ai_friendly_count == 1
     assert stats.remoto_count == 1
+    assert stats.seniority_count["N/D"] == 2
+
+
+def test_pipeline_runner_with_seniority_filter(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Senior Backend Engineer",
+            description="Desarrollo backend en Python.",
+            url="https://computrabajo.com/job/sr",
+            source="computrabajo",
+        ),
+        RawJob(
+            title="Junior Frontend Engineer",
+            description="Desarrollo frontend en React.",
+            url="https://computrabajo.com/job/jr",
+            source="computrabajo",
+        ),
+    ]
+
+    mock_scraper = MockScraper("computrabajo", raw_jobs)
+    runner = PipelineRunner(scrapers=[mock_scraper])
+
+    options = FilterOptions(
+        categories=[],
+        seniority="senior",
+        output_dir=str(tmp_path),
+    )
+
+    xlsx_path, csv_path, stats = runner.run(options)
+    assert stats.total_raw == 2
+    assert stats.total_filtered == 1
+    assert stats.total_unique == 1
+    assert "Senior" in stats.seniority_count
+    assert stats.seniority_count["Senior"] == 1

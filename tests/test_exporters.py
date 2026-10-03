@@ -16,6 +16,7 @@ def _create_sample_jobs():
             company="Tech Corp",
             location="Córdoba",
             modality="Remoto",
+            seniority="Senior",
             salary="$3000 USD",
             description="Python FastAPI Copilot",
             url="https://example.com/job/1",
@@ -34,6 +35,7 @@ def _create_sample_jobs():
             company="Design Studio",
             location="Argentina",
             modality="Híbrido",
+            seniority="N/D",
             salary=None,
             description="Diseño Figma freelance por proyecto",
             url="https://example.com/job/2",
@@ -64,20 +66,23 @@ def test_csv_exporter(tmp_path: Path):
     assert len(reader) == 3
     headers = reader[0]
     assert "Estado" in headers
+    assert "Seniority" in headers
     assert "AI Friendly" in headers
     assert "Link" in headers
 
     row1 = reader[1]
     assert row1[0] == "Nueva"
     assert row1[1] == "Senior Python Backend"
-    assert row1[7] == "SI"  # AI Friendly
-    assert row1[9] == "NO"  # Freelance
-    assert row1[11] == "SI"  # Remoto
+    assert row1[5] == "Senior"  # Seniority
+    assert row1[8] == "SI"  # AI Friendly
+    assert row1[10] == "NO"  # Freelance
+    assert row1[12] == "SI"  # Remoto
 
     row2 = reader[2]
     assert row2[0] == "Interesa"
-    assert row2[7] == "NO"
-    assert row2[9] == "SI"
+    assert row2[5] == "N/D"
+    assert row2[8] == "NO"
+    assert row2[10] == "SI"
 
 
 def test_excel_exporter(tmp_path: Path):
@@ -95,14 +100,16 @@ def test_excel_exporter(tmp_path: Path):
 
     ws_offers = wb["Ofertas"]
     assert ws_offers.max_row == 3
-    assert ws_offers.max_column == 16
+    assert ws_offers.max_column == 17
 
     # Verificar cabecera
     assert ws_offers.cell(row=1, column=1).value == "Estado"
-    assert ws_offers.cell(row=1, column=16).value == "Link"
+    assert ws_offers.cell(row=1, column=6).value == "Seniority"
+    assert ws_offers.cell(row=1, column=17).value == "Link"
 
-    # Verificar hipervínculo
-    link_formula = ws_offers.cell(row=2, column=16).value
+    # Verificar datos e hipervínculo
+    assert ws_offers.cell(row=2, column=6).value == "Senior"
+    link_formula = ws_offers.cell(row=2, column=17).value
     assert link_formula == '=HYPERLINK("https://example.com/job/1", "Ver oferta")'
 
     # Verificar validación de datos (dropdown en Estado)

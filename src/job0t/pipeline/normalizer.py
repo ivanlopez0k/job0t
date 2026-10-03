@@ -72,6 +72,7 @@ def normalize_job(raw: RawJob) -> Job:
         description=clean_description,
         url=clean_url,
         source=raw.source.strip().lower(),
+        raw_payload=raw.raw_payload,
     )
 
 

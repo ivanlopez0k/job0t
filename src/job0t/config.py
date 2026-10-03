@@ -94,3 +94,19 @@ def load_flags_config(config_dir: Optional[Path] = None) -> FlagsConfig:
     file_path = base_dir / "flags.yaml"
     data = load_yaml(file_path)
     return {k: FlagRule.model_validate(v) for k, v in data.items()}
+
+
+class SeniorityLevel(BaseModel):
+    label: str
+    keywords: List[str] = Field(default_factory=list)
+
+
+SeniorityConfig = Dict[str, SeniorityLevel]
+
+
+def load_seniority_config(config_dir: Optional[Path] = None) -> SeniorityConfig:
+    """Carga y valida config/seniority.yaml."""
+    base_dir = config_dir or get_default_config_dir()
+    file_path = base_dir / "seniority.yaml"
+    data = load_yaml(file_path)
+    return {k: SeniorityLevel.model_validate(v) for k, v in data.items()}

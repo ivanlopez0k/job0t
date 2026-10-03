@@ -45,6 +45,22 @@ def filter_jobs(
             if not job_cat_labels.intersection(valid_category_labels):
                 continue
 
+        # 5. Filtro por Seniority (Estricto - Opción A)
+        if options.seniority:
+            target_sen = options.seniority.strip().lower()
+            if target_sen not in ("todos", "all", "none", "no", "cualquiera", "indistinto"):
+                if target_sen in ("jr", "junior", "entry", "entry-level"):
+                    target_sen = "junior"
+                elif target_sen in ("ssr", "semi", "semi-senior", "semi_senior", "semisenior"):
+                    target_sen = "semi senior"
+                elif target_sen in ("sr", "senior", "lead", "principal", "staff"):
+                    target_sen = "senior"
+                elif target_sen in ("trainee", "intern", "pasante", "pasantia"):
+                    target_sen = "trainee"
+
+                if job.seniority.strip().lower() != target_sen:
+                    continue
+
         filtered.append(job)
 
     return filtered

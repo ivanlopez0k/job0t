@@ -11,9 +11,11 @@ from job0t.config import (
     CategoriesConfig,
     CategoryDefinition,
     FlagsConfig,
+    SeniorityConfig,
     load_app_config,
     load_categories_config,
     load_flags_config,
+    load_seniority_config,
 )
 from job0t.exporters.csv_exporter import CsvExporter
 from job0t.exporters.excel_exporter import ExcelExporter
@@ -23,6 +25,7 @@ from job0t.pipeline.deduplicator import deduplicate_jobs
 from job0t.pipeline.filter import filter_jobs
 from job0t.pipeline.flag_detector import detect_flags_for_all
 from job0t.pipeline.normalizer import normalize_jobs
+from job0t.pipeline.seniority_detector import detect_seniority_for_all
 from job0t.scrapers.base import BaseScraper
 from job0t.scrapers.computrabajo import ComputrabajoScraper
 from job0t.scrapers.getonboard import GetOnBoardScraper
@@ -39,11 +42,13 @@ class PipelineRunner:
         config: Optional[AppConfig] = None,
         categories_config: Optional[CategoriesConfig] = None,
         flags_config: Optional[FlagsConfig] = None,
+        seniority_config: Optional[SeniorityConfig] = None,
         scrapers: Optional[List[BaseScraper]] = None,
     ):
         self.config = config or load_app_config()
         self.categories_config = categories_config or load_categories_config()
         self.flags_config = flags_config or load_flags_config()
+        self.seniority_config = seniority_config or load_seniority_config()
         self.scrapers = scrapers if scrapers is not None else [
             ComputrabajoScraper(),
             GetOnBoardScraper(),
@@ -65,7 +70,7 @@ class PipelineRunner:
         return resolved or list(self.categories_config.values())
 
     def run(self, options: FilterOptions) -> Tuple[Path, Path, RunStats]:
-        """Ejecuta el ciclo completo: scrape -> normalize -> classify -> flags -> filter -> dedupe -> export."""
+        """Ejecuta el ciclo completo: scrape -> normalize -> classify -> flags -> seniority -> filter -> dedupe -> export."""
         target_categories = self._resolve_target_categories(options.categories)
 
         # 1. Extracción de ofertas (Scraping)
@@ -90,13 +95,16 @@ class PipelineRunner:
         # 4. Detección de Banderas (AI Friendly, Freelance, Remoto)
         jobs = detect_flags_for_all(jobs, self.flags_config)
 
-        # 5. Filtrado por banderas o categorías requeridas
+        # 5. Detección de Seniority
+        jobs = detect_seniority_for_all(jobs, self.seniority_config)
+
+        # 6. Filtrado por banderas, categorías o seniority
         filtered_jobs = filter_jobs(jobs, options, self.categories_config)
 
-        # 6. Deduplicación
+        # 7. Deduplicación
         unique_jobs = deduplicate_jobs(filtered_jobs)
 
-        # 7. Métricas y Estadísticas
+        # 8. Métricas y Estadísticas
         stats = RunStats(
             run_at=datetime.now(),
             total_raw=len(all_raw_jobs),
@@ -109,6 +117,7 @@ class PipelineRunner:
 
         for j in unique_jobs:
             stats.sources_count[j.source] = stats.sources_count.get(j.source, 0) + 1
+            stats.seniority_count[j.seniority] = stats.seniority_count.get(j.seniority, 0) + 1
             for cat in j.categories:
                 stats.categories_count[cat] = stats.categories_count.get(cat, 0) + 1
 

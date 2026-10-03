@@ -44,6 +44,27 @@ def _prompt_interactive_categories() -> List[str]:
     return selected or []
 
 
+def _prompt_interactive_seniority() -> Optional[str]:
+    """Muestra un menú interactivo para elegir el nivel de seniority deseado."""
+    choices = [
+        "(Recomendado) Todos / No filtrar",
+        "Junior",
+        "Semi Senior (SSR)",
+        "Senior (SR)",
+        "Trainee / Entry",
+    ]
+    console.print("\n[bold cyan]Selector de Seniority[/bold cyan]")
+    choice = questionary.select(
+        "Seleccioná el seniority deseado:",
+        choices=choices,
+        default="(Recomendado) Todos / No filtrar",
+    ).ask()
+
+    if not choice or choice.startswith("(Recomendado)"):
+        return None
+    return choice
+
+
 @app.callback()
 def main_callback():
     """🤖 job0t — Herramienta local para buscar, clasificar y exportar ofertas laborales."""
@@ -57,6 +78,12 @@ def run(
         "--categories",
         "-c",
         help="Categorías separadas por comas (ej: 'desarrollo,data'). Si se omite, abre el menú interactivo.",
+    ),
+    seniority: Optional[str] = typer.Option(
+        None,
+        "--seniority",
+        "-s",
+        help="Filtrar por seniority: trainee, junior, ssr, sr (o 'todos'). Si se omite en modo interactivo, se preguntará.",
     ),
     ai_friendly: bool = typer.Option(
         False,
@@ -98,6 +125,8 @@ def run(
         )
     )
 
+    is_interactive = categories is None
+
     # 1. Determinar categorías seleccionadas
     selected_categories: List[str] = []
     if categories:
@@ -108,6 +137,11 @@ def run(
             console.print("[yellow]No seleccionaste ninguna categoría. Búsqueda cancelada.[/yellow]")
             raise typer.Exit(code=0)
 
+    # 2. Determinar seniority seleccionado
+    selected_seniority = seniority
+    if is_interactive and selected_seniority is None:
+        selected_seniority = _prompt_interactive_seniority()
+
     console.print(f"[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
 
     filter_flags_msg = []
@@ -117,6 +151,8 @@ def run(
         filter_flags_msg.append("[cyan]Freelance[/cyan]")
     if remoto:
         filter_flags_msg.append("[magenta]Remoto[/magenta]")
+    if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
+        filter_flags_msg.append(f"[blue]Seniority: {selected_seniority}[/blue]")
 
     if filter_flags_msg:
         console.print(f"[bold]Filtros aplicados:[/bold] {' + '.join(filter_flags_msg)}")
@@ -126,16 +162,17 @@ def run(
         only_ai=ai_friendly,
         only_freelance=freelance,
         only_remoto=remoto,
+        seniority=selected_seniority,
         max_pages=max_pages,
         output_dir=output_dir,
     )
 
-    # 2. Ejecutar Runner con indicador de progreso
+    # 3. Ejecutar Runner con indicador de progreso
     runner = PipelineRunner()
     with console.status("[bold green]Buscando y procesando ofertas laborales...", spinner="dots"):
         xlsx_path, csv_path, stats = runner.run(options)
 
-    # 3. Mostrar Resumen de Resultados
+    # 4. Mostrar Resumen de Resultados
     console.print("\n[bold green][OK] Búsqueda finalizada exitosamente[/bold green]\n")
 
     table = Table(title="Resumen de Ejecución", border_style="dim")
@@ -159,6 +196,15 @@ def run(
         for src, cnt in stats.sources_count.items():
             source_table.add_row(src.capitalize(), str(cnt))
         console.print(source_table)
+
+    # Desglose por seniority
+    if stats.seniority_count:
+        sen_table = Table(title="Distribución por Seniority", border_style="dim")
+        sen_table.add_column("Seniority", style="bold")
+        sen_table.add_column("Ofertas", justify="right")
+        for sen, cnt in sorted(stats.seniority_count.items(), key=lambda x: x[1], reverse=True):
+            sen_table.add_row(sen, str(cnt))
+        console.print(sen_table)
 
     console.print("\n[bold]Reportes generados:[/bold]")
     console.print(f"  [Excel] {xlsx_path.resolve()}")

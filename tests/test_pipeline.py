@@ -1,12 +1,13 @@
 """Tests unitarios para los componentes del pipeline de job0t."""
 
-from job0t.config import load_categories_config, load_flags_config
+from job0t.config import load_categories_config, load_flags_config, load_seniority_config
 from job0t.models import FilterOptions, Job, RawJob
 from job0t.pipeline.classifier import classify_job
 from job0t.pipeline.deduplicator import deduplicate_jobs
 from job0t.pipeline.filter import filter_jobs
 from job0t.pipeline.flag_detector import detect_flags
 from job0t.pipeline.normalizer import normalize_job, strip_html
+from job0t.pipeline.seniority_detector import detect_seniority
 
 
 def test_strip_html():
@@ -184,3 +185,88 @@ def test_deduplicate_jobs_strict_and_fuzzy():
     assert len(deduped) == 2
     assert deduped[0].title == "Dev Python"
     assert deduped[1].title == "Data Scientist"
+
+
+def test_seniority_detection_title_priority():
+    cfg = load_seniority_config()
+
+    # Senior en título, descripción menciona juniors
+    job_sr = Job(
+        title="Senior Python Architect",
+        description="Liderar el equipo y mentorear a 3 desarrolladores junior.",
+        url="https://example.com/sr1",
+        source="test",
+    )
+    detected_sr = detect_seniority(job_sr, cfg)
+    assert detected_sr.seniority == "Senior"
+
+    # Semi Senior en título
+    job_ssr = Job(
+        title="Desarrollador Fullstack SSR / Semi Senior",
+        description="Tareas de programación web.",
+        url="https://example.com/ssr1",
+        source="test",
+    )
+    detected_ssr = detect_seniority(job_ssr, cfg)
+    assert detected_ssr.seniority == "Semi Senior"
+
+    # Junior en título
+    job_jr = Job(
+        title="Junior Frontend React Dev",
+        description="Buscamos Jr con ganas de aprender.",
+        url="https://example.com/jr1",
+        source="test",
+    )
+    detected_jr = detect_seniority(job_jr, cfg)
+    assert detected_jr.seniority == "Junior"
+
+    # Trainee en título
+    job_trainee = Job(
+        title="Pasante / Trainee QA Tester",
+        description="Pasantía inicial.",
+        url="https://example.com/tr1",
+        source="test",
+    )
+    detected_tr = detect_seniority(job_trainee, cfg)
+    assert detected_tr.seniority == "Trainee"
+
+
+def test_seniority_detection_gob_payload():
+    cfg = load_seniority_config()
+
+    # Título neutro, seniority_id provisto por Get on Board
+    job_gob = Job(
+        title="Backend Developer",
+        description="Desarrollo de servicios.",
+        url="https://example.com/gob1",
+        source="getonboard",
+        raw_payload={"seniority_id": 3},  # 3 = Semi Senior
+    )
+    detected = detect_seniority(job_gob, cfg)
+    assert detected.seniority == "Semi Senior"
+
+
+def test_filter_jobs_by_seniority_strict():
+    job_sr = Job(title="Dev SR", seniority="Senior", url="https://example.com/1", source="test")
+    job_jr = Job(title="Dev JR", seniority="Junior", url="https://example.com/2", source="test")
+    job_nd = Job(title="Dev ND", seniority="N/D", url="https://example.com/3", source="test")
+
+    jobs = [job_sr, job_jr, job_nd]
+
+    # Filtro estricto por Senior (excluye Junior y N/D)
+    res_sr = filter_jobs(jobs, FilterOptions(seniority="sr"))
+    assert len(res_sr) == 1
+    assert res_sr[0].title == "Dev SR"
+
+    # Filtro estricto por Junior (excluye Senior y N/D)
+    res_jr = filter_jobs(jobs, FilterOptions(seniority="junior"))
+    assert len(res_jr) == 1
+    assert res_jr[0].title == "Dev JR"
+
+    # Filtro 'todos' incluye todas
+    res_todos = filter_jobs(jobs, FilterOptions(seniority="todos"))
+    assert len(res_todos) == 3
+
+    # Sin filtro de seniority incluye todas
+    res_none = filter_jobs(jobs, FilterOptions())
+    assert len(res_none) == 3

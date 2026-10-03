@@ -1,0 +1,40 @@
+trainee:
+  label: "Trainee"
+  keywords:
+    - "trainee"
+    - "pasante"
+    - "pasantía"
+    - "pasantia"
+    - "intern"
+    - "internship"
+    - "practicante"
+
+junior:
+  label: "Junior"
+  keywords:
+    - "junior"
+    - "jr"
+    - "entry level"
+    - "entry-level"
+
+semi_senior:
+  label: "Semi Senior"
+  keywords:
+    - "semi senior"
+    - "semi-senior"
+    - "ssr"
+    - "semi_senior"
+    - "ss-sr"
+    - "intermedio"
+
+senior:
+  label: "Senior"
+  keywords:
+    - "senior"
+    - "sr"
+    - "lead"
+    - "staff"
+    - "principal"
+    - "arquitecto"
+    - "architect"
+    - "tech lead"

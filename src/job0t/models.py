@@ -29,6 +29,7 @@ class Job(BaseModel):
     company: str = "Confidencial"
     location: str = "N/D"
     modality: str = "N/D"
+    seniority: str = "N/D"
     salary: Optional[str] = None
     description: str = ""
     url: str
@@ -43,6 +44,7 @@ class Job(BaseModel):
     remoto: bool = False
     remoto_evidence: str = ""
     status: str = "Nueva"
+    raw_payload: Dict[str, Any] = Field(default_factory=dict)
 
     @classmethod
     def generate_id(cls, source: str, url: str) -> str:
@@ -64,6 +66,7 @@ class FilterOptions(BaseModel):
     only_ai: bool = False
     only_freelance: bool = False
     only_remoto: bool = False
+    seniority: Optional[str] = None
     max_pages: Optional[int] = None
     output_dir: Optional[str] = None
 
@@ -80,3 +83,4 @@ class RunStats(BaseModel):
     remoto_count: int = 0
     sources_count: Dict[str, int] = Field(default_factory=dict)
     categories_count: Dict[str, int] = Field(default_factory=dict)
+    seniority_count: Dict[str, int] = Field(default_factory=dict)

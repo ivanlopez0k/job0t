@@ -5,6 +5,7 @@ from job0t.config import (
     load_app_config,
     load_categories_config,
     load_flags_config,
+    load_seniority_config,
     get_default_config_dir,
 )
 
@@ -41,3 +42,13 @@ def test_load_flags_config():
     assert "freelance" in free.yes_keywords
     rem = flags["remoto"]
     assert "remoto" in rem.yes_keywords
+
+
+def test_load_seniority_config():
+    seniority_cfg = load_seniority_config()
+    assert "senior" in seniority_cfg
+    assert "semi_senior" in seniority_cfg
+    assert "junior" in seniority_cfg
+    assert "trainee" in seniority_cfg
+    assert seniority_cfg["senior"].label == "Senior"
+    assert "sr" in seniority_cfg["senior"].keywords

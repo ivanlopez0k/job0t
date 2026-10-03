@@ -21,6 +21,7 @@ class ExcelExporter(BaseExporter):
         "Empresa",
         "Ubicación",
         "Modalidad",
+        "Seniority",
         "Salario",
         "Categorías",
         "AI Friendly",
@@ -87,6 +88,7 @@ class ExcelExporter(BaseExporter):
                 job.company,
                 job.location,
                 job.modality,
+                job.seniority,
                 job.salary or "N/D",
                 "; ".join(job.categories),
                 "SI" if job.ai_friendly else "NO",
@@ -100,20 +102,20 @@ class ExcelExporter(BaseExporter):
             ]
             ws.append(row_data)
 
-            # Celda de Enlace clickeable (Columna 16: P)
-            link_cell = ws.cell(row=row_idx, column=16)
+            # Celda de Enlace clickeable (Columna 17: Q)
+            link_cell = ws.cell(row=row_idx, column=17)
             escaped_url = job.url.replace('"', '""')
             link_cell.value = f'=HYPERLINK("{escaped_url}", "Ver oferta")'
             link_cell.font = link_font
             link_cell.alignment = center_align
 
             # Aplicar bordes y alineaciones a la fila
-            for col_idx in range(1, 17):
+            for col_idx in range(1, 18):
                 c = ws.cell(row=row_idx, column=col_idx)
                 c.border = thin_border
-                if col_idx not in (16,):
+                if col_idx not in (17,):
                     c.font = regular_font
-                if col_idx in (1, 8, 10, 12, 14, 15, 16):
+                if col_idx in (1, 6, 9, 11, 13, 15, 16, 17):
                     c.alignment = center_align
                 else:
                     c.alignment = left_align
@@ -142,8 +144,8 @@ class ExcelExporter(BaseExporter):
         green_font = Font(name="Calibri", size=11, bold=True, color="375623")
         rule_green = CellIsRule(operator="equal", formula=['"SI"'], fill=green_fill, font=green_font)
 
-        # Aplicar a AI Friendly (H), Freelance (J), Remoto (L)
-        for col_letter in ["H", "J", "L"]:
+        # Aplicar a AI Friendly (I), Freelance (K), Remoto (M)
+        for col_letter in ["I", "K", "M"]:
             ws.conditional_formatting.add(f"{col_letter}2:{col_letter}{max_row}", rule_green)
 
         # Ajuste dinámico de ancho de columnas
@@ -224,6 +226,23 @@ class ExcelExporter(BaseExporter):
 
         for cat, count in cat_tally.items():
             ws.cell(row=curr_row, column=1, value=cat).font = regular_font
+            ws.cell(row=curr_row, column=2, value=count).font = bold_font
+            curr_row += 1
+
+        # Desglose por Seniority
+        curr_row += 1
+        ws.cell(row=curr_row, column=1, value="Seniority").font = subtitle_font
+        ws.cell(row=curr_row, column=2, value="Ofertas").font = subtitle_font
+        ws.cell(row=curr_row, column=1).fill = header_fill
+        ws.cell(row=curr_row, column=2).fill = header_fill
+        curr_row += 1
+
+        seniority_tally = {}
+        for j in jobs:
+            seniority_tally[j.seniority] = seniority_tally.get(j.seniority, 0) + 1
+
+        for sen, count in sorted(seniority_tally.items(), key=lambda x: x[1], reverse=True):
+            ws.cell(row=curr_row, column=1, value=sen).font = regular_font
             ws.cell(row=curr_row, column=2, value=count).font = bold_font
             curr_row += 1
 
