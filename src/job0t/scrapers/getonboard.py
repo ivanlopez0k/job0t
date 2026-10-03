@@ -2,6 +2,7 @@
 
 import logging
 import random
+import re
 import time
 from typing import Any, Dict, List, Optional
 import httpx
@@ -56,12 +57,40 @@ class GetOnBoardScraper(BaseScraper):
             # Empresa
             company_data = attrs.get("company", {}).get("data", {})
             company = company_data.get("attributes", {}).get("name") if isinstance(company_data, dict) else None
+            if not company and url:
+                slug = url.rstrip("/").split("/")[-1]
+                title_slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+                rem = slug
+                for w in title_slug.split("-")[:4]:
+                    if rem.startswith(w + "-"):
+                        rem = rem[len(w) + 1 :]
+                parts = rem.split("-")
+                comp_parts = [
+                    p for p in parts
+                    if p not in ("remote", "santiago", "chile", "argentina", "hybrid", "colombia", "mexico", "peru", "latam")
+                    and not (len(p) <= 4 and re.match(r"^[a-f0-9]+$", p))
+                ]
+                if comp_parts:
+                    company = " ".join(comp_parts).title()
 
             # Modalidad y Ubicación
             is_remote = attrs.get("remote", False)
-            modality = "Remoto" if is_remote else attrs.get("remote_modality")
+            remote_modality = (attrs.get("remote_modality") or "").lower()
+            if is_remote and "hybrid" not in remote_modality:
+                modality = "Remoto"
+            elif "hybrid" in remote_modality:
+                modality = "Híbrido"
+            elif any(w in remote_modality for w in ["on_site", "presencial"]):
+                modality = "Presencial"
+            else:
+                modality = "Remoto" if is_remote else "Presencial"
+
             countries = attrs.get("countries", [])
-            location = ", ".join(countries) if countries else ("Remoto" if is_remote else None)
+            geo_countries = [c for c in countries if c.strip().lower() not in ("remote", "remoto")]
+            if geo_countries:
+                location = ", ".join(geo_countries)
+            else:
+                location = "Cualquier lugar / LatAm" if is_remote else "N/D"
 
             # Salario
             min_sal = attrs.get("min_salary")

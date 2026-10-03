@@ -43,50 +43,44 @@ class ComputrabajoScraper(BaseScraper):
             else:
                 url = href or base_url
 
-            # 2. Empresa y ubicación
+            # 2. Empresa
             company = None
+            comp_tag = art.select_one("a[offer-grid-article-company-url], p.dFlex a.fc_base, span.it-blank, a.fc_base, span.fc_base")
+            if comp_tag and comp_tag != title_tag:
+                company = comp_tag.get_text(strip=True)
+            elif art.select_one("p.fs16"):
+                meta_p = art.select_one("p.fs16")
+                c_span = meta_p.select_one("span.it-blank, a.fc_base")
+                if c_span:
+                    company = c_span.get_text(strip=True)
+
+            # 3. Ubicación (p.fs16 secundario, span.item_location o URL)
             location = None
-            meta_p = art.select_one("p.fs16")
-            if meta_p:
-                company_span = meta_p.select_one("span.it-blank, a.fc_base, span.fc_base")
-                if company_span:
-                    company = company_span.get_text(strip=True)
-                loc_span = meta_p.select_one("span.item_location")
-                if loc_span:
-                    location = loc_span.get_text(strip=True)
+            loc_paragraphs = art.select("p.fs16")
+            if len(loc_paragraphs) > 1:
+                location = loc_paragraphs[1].get_text(strip=True)
+            elif art.select_one("span.item_location"):
+                location = art.select_one("span.item_location").get_text(strip=True)
 
-            # Fallbacks si no estaban en el párrafo fs16
-            if not company:
-                comp_tag = art.select_one("a.fc_base, span.fc_base")
-                if comp_tag and comp_tag != title_tag:
-                    company = comp_tag.get_text(strip=True)
-
-            if not location:
-                loc_tag = art.select_one("span.item_location")
-                if loc_tag:
-                    location = loc_tag.get_text(strip=True)
-
-            # Extracción inteligente de ubicación desde la URL si no viene en el HTML
             if not location and href:
                 loc_match = re.search(r"-en-([a-z0-9\-]+)-[a-f0-9]{32}", href, re.IGNORECASE)
                 if loc_match:
                     location = loc_match.group(1).replace("-", " ").title()
 
-            # 3. Descripción o extracto
+            # 4. Descripción o extracto
             desc_tag = art.select_one("p.bRS, p.fs13.mb10, p.fs13")
             description = desc_tag.get_text(" ", strip=True) if desc_tag else title
 
-            # 4. Tags de modalidad y salario
+            # 5. Modalidad y salario (inspeccionando div.fs13 y span.tag)
             modality = None
             salary = None
-            tags = art.select("span.tag.base, span.tag")
-            for tag in tags:
-                tag_text = tag.get_text(strip=True)
-                tag_lower = tag_text.lower()
-                if any(m in tag_lower for m in ["remoto", "presencial", "híbrido", "hibrido"]):
-                    modality = tag_text
-                elif "$" in tag_text or "neto" in tag_lower or "mensual" in tag_lower:
-                    salary = tag_text
+            for sp in art.select("div.fs13 span, span.tag.base, span.tag"):
+                txt = sp.get_text(strip=True)
+                low = txt.lower()
+                if any(m in low for m in ["remoto", "presencial", "híbrido", "hibrido", "home office"]):
+                    modality = txt
+                elif "$" in txt or "neto" in low or "mensual" in low:
+                    salary = txt
 
             # 5. Fecha cruda
             date_tag = art.select_one("p.fc_aux.fs13, p.fc_aux, span.fc_aux")

@@ -24,11 +24,11 @@ def strip_html(html_text: Optional[str]) -> str:
 def normalize_modality(raw_modality: Optional[str], text_snippet: str = "") -> str:
     """Estandariza la modalidad a 'Remoto', 'Híbrido', 'Presencial' o 'N/D'."""
     haystack = f"{raw_modality or ''} {text_snippet}".lower()
-    if re.search(r"\b(100%\s*remoto|remoto|remote|teletrabajo|home\s*office)\b", haystack):
-        return "Remoto"
-    if re.search(r"\b(hibrid[oa]|híbrid[oa]|hybrid)\b", haystack):
+    if re.search(r"\b(presencial\s*y\s*remoto|hibrid[oa]|híbrid[oa]|hybrid|semi-?presencial)\b", haystack):
         return "Híbrido"
-    if re.search(r"\b(presencial|on-site|onsite)\b", haystack):
+    if re.search(r"\b(100%\s*remoto|solo\s*remoto|remoto|remote|teletrabajo|home\s*office)\b", haystack):
+        return "Remoto"
+    if re.search(r"\b(solo\s*presencial|presencial|on-site|onsite)\b", haystack):
         return "Presencial"
     return "N/D"
 
@@ -37,7 +37,9 @@ def normalize_job(raw: RawJob) -> Job:
     """Sanea y transforma un RawJob en una entidad Job validada."""
     clean_title = re.sub(r"\s+", " ", raw.title or "").strip()
     
-    clean_company = re.sub(r"\s+", " ", raw.company or "").strip()
+    raw_comp = re.sub(r"\s+", " ", raw.company or "").strip()
+    # Eliminar posibles prefijos de rating tipo '4,2 ' o '3,8 '
+    clean_company = re.sub(r"^\d+[,\.]\d+\s+", "", raw_comp).strip()
     if not clean_company or clean_company.lower() in ("sin especificar", "confidencial", "anonimo", "anónimo"):
         clean_company = "Confidencial"
 
@@ -47,7 +49,13 @@ def normalize_job(raw: RawJob) -> Job:
 
     clean_description = strip_html(raw.description)
 
-    clean_modality = normalize_modality(raw.modality, f"{clean_title} {clean_description[:150]}")
+    clean_modality = normalize_modality(raw.modality, f"{clean_title} {raw.location or ''} {clean_description[:300]}")
+
+    # Si la ubicación vino literalmente como 'Remoto' o 'Remote', asegurar modalidad y clarificar ubicación
+    if clean_location.lower() in ("remoto", "remote"):
+        if clean_modality == "N/D":
+            clean_modality = "Remoto"
+        clean_location = "Cualquier lugar / LatAm"
 
     clean_salary = None
     if raw.salary and raw.salary.strip():
