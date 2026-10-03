@@ -131,6 +131,7 @@ def run(
     ),
 ):
     """Ejecuta la búsqueda, clasificación y exportación de ofertas laborales."""
+    console.clear()
     console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
     console.print(
         Panel(
