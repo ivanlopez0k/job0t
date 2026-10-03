@@ -54,13 +54,27 @@ FlagsConfig = Dict[str, FlagRule]
 
 
 def get_default_config_dir() -> Path:
-    """Devuelve la ruta a la carpeta config del proyecto."""
-    # Ubicado relativo al directorio raíz del proyecto
-    cwd = Path.cwd()
-    if (cwd / "config").exists():
-        return cwd / "config"
-    # Fallback relativo a este archivo src/job0t/config.py
-    return Path(__file__).resolve().parent.parent.parent / "config"
+    """Devuelve la ruta a la carpeta config del proyecto, con fallback al directorio global de instalación o home."""
+    # 1. Si el usuario está ejecutando en un directorio con su propia carpeta config
+    cwd_config = Path.cwd() / "config"
+    if cwd_config.exists() and (cwd_config / "categories.yaml").exists():
+        return cwd_config
+
+    # 2. Si job0t está instalado globalmente en ~/.job0t/config o ~/.job0t/app/config
+    home_config = Path.home() / ".job0t" / "config"
+    if home_config.exists() and (home_config / "categories.yaml").exists():
+        return home_config
+
+    home_app_config = Path.home() / ".job0t" / "app" / "config"
+    if home_app_config.exists() and (home_app_config / "categories.yaml").exists():
+        return home_app_config
+
+    # 3. Fallback relativo a este archivo src/job0t/config.py (modo editable o repo clonado)
+    repo_config = Path(__file__).resolve().parent.parent.parent / "config"
+    if repo_config.exists() and (repo_config / "categories.yaml").exists():
+        return repo_config
+
+    return repo_config
 
 
 def load_yaml(file_path: Path) -> Dict[str, Any]:

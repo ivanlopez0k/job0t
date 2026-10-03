@@ -54,19 +54,48 @@ job0t/
 │       └── exporters/       # Generadores de Excel y CSV
 ├── output/                  # Archivos generados (ignorado en Git)
 ├── tests/                   # Suite de tests unitarios e integración offline
+├── install.ps1              # Instalador universal para Windows (PowerShell)
+├── install.sh               # Instalador universal para macOS / Linux
 ├── requirements.txt
 └── pyproject.toml
 ```
 
 ---
 
-## 🛠️ Instalación y Requisitos
+## ⚡ Instalación Rápida (1 Solo Comando)
 
-Requiere **Python 3.11+**.
+No necesitás clonar el repo manualmente ni configurar entornos a mano. Abrí tu terminal y pegá el comando según tu sistema:
+
+### En Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/ivanlopez0k/job0t/main/install.ps1 | iex
+```
+
+### En macOS / Linux (Terminal / Bash / Zsh):
+```bash
+curl -fsSL https://raw.githubusercontent.com/ivanlopez0k/job0t/main/install.sh | bash
+```
+
+> **¿Qué hace el instalador?**
+> 1. Detecta si tenés Python 3.10+ (en Windows lo instala automáticamente vía `winget` si te falta).
+> 2. Descarga la aplicación en una carpeta aislada de tu usuario (`~/.job0t`).
+> 3. Configura su propio entorno virtual e instala dependencias.
+> 4. Registra el comando `job0t` globalmente en tu terminal.
+
+Una vez terminada la instalación, cerrá y volvé a abrir tu terminal y ejecutá directamente:
+```bash
+job0t run
+```
+
+---
+
+## 🛠️ Instalación Manual para Desarrolladores
+
+Si querés colaborar con el código o correrlo en modo desarrollo:
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone <URL_DEL_REPO>
+   git clone https://github.com/ivanlopez0k/job0t.git
    cd job0t
    ```
 
@@ -81,10 +110,8 @@ Requiere **Python 3.11+**.
    source .venv/bin/activate
    ```
 
-3. **Instalar dependencias:**
+3. **Instalar dependencias en modo editable:**
    ```bash
-   pip install -r requirements.txt
-   # O instalar en modo editable:
    pip install -e .
    ```
 
