@@ -1,0 +1,117 @@
+desarrollo:
+  label: "Desarrollo de software"
+  search_terms:
+    - "desarrollador"
+    - "developer"
+    - "programador"
+  match_keywords:
+    - "backend"
+    - "frontend"
+    - "fullstack"
+    - ".net"
+    - "python"
+    - "software engineer"
+    - "react"
+    - "node"
+    - "java"
+    - "golang"
+    - "c#"
+  exclude_keywords:
+    - "vendedor"
+    - "comercial"
+    - "inmobiliario"
+
+diseno:
+  label: "Diseño"
+  search_terms:
+    - "diseñador"
+    - "ux"
+    - "ui"
+  match_keywords:
+    - "figma"
+    - "diseño gráfico"
+    - "product designer"
+    - "ui designer"
+    - "ux designer"
+  exclude_keywords:
+    - "diseño de interiores"
+    - "arquitectura de interiores"
+
+data:
+  label: "Data / Análisis"
+  search_terms:
+    - "data analyst"
+    - "analista de datos"
+  match_keywords:
+    - "sql"
+    - "power bi"
+    - "bi"
+    - "data engineer"
+    - "tableau"
+    - "data science"
+  exclude_keywords: []
+
+qa:
+  label: "QA / Testing"
+  search_terms:
+    - "qa"
+    - "tester"
+  match_keywords:
+    - "automatización de pruebas"
+    - "qa automation"
+    - "qa manual"
+    - "cypress"
+    - "selenium"
+  exclude_keywords: []
+
+devops:
+  label: "DevOps / Cloud"
+  search_terms:
+    - "devops"
+    - "cloud"
+    - "sre"
+  match_keywords:
+    - "aws"
+    - "azure"
+    - "docker"
+    - "kubernetes"
+    - "terraform"
+    - "ci/cd"
+  exclude_keywords: []
+
+soporte:
+  label: "Soporte IT"
+  search_terms:
+    - "soporte técnico"
+    - "help desk"
+  match_keywords:
+    - "sysadmin"
+    - "soporte nivel 1"
+    - "soporte nivel 2"
+    - "mesas de ayuda"
+  exclude_keywords: []
+
+producto:
+  label: "Producto / Gestión"
+  search_terms:
+    - "product manager"
+    - "project manager"
+  match_keywords:
+    - "scrum master"
+    - "product owner"
+    - "analista funcional"
+    - "agile coach"
+  exclude_keywords: []
+
+marketing:
+  label: "Marketing digital"
+  search_terms:
+    - "marketing digital"
+    - "community manager"
+  match_keywords:
+    - "seo"
+    - "sem"
+    - "growth"
+    - "copywriter"
+    - "google ads"
+  exclude_keywords: []

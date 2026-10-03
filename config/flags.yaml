@@ -1,0 +1,60 @@
+ai_friendly:
+  label: "AI Friendly"
+  yes_keywords:
+    - "copilot"
+    - "chatgpt"
+    - "claude"
+    - "cursor"
+    - "llm"
+    - "openai"
+    - "prompt engineering"
+    - "ai-first"
+    - "ai-powered"
+    - "ia generativa"
+    - "generative ai"
+    - "uso de ia"
+    - "herramientas de ia"
+    - "ai friendly"
+    - "ai-native"
+  no_keywords:
+    - "no se permite el uso de ia"
+    - "prohibido el uso de ia"
+    - "prohibido chatgpt"
+  yes_sources: []
+
+freelance:
+  label: "Freelance"
+  yes_keywords:
+    - "freelance"
+    - "freelancer"
+    - "por proyecto"
+    - "contractor"
+    - "independiente"
+    - "monotributista"
+    - "honorarios"
+    - "locación de servicios"
+    - "contrato por obra"
+  no_keywords:
+    - "relación de dependencia directa"
+    - "efectivo permanente"
+  yes_sources:
+    - "workana"
+    - "upwork"
+    - "freelancer"
+
+remoto:
+  label: "Remoto"
+  yes_keywords:
+    - "remoto"
+    - "100% remoto"
+    - "home office"
+    - "trabajo remoto"
+    - "teletrabajo"
+    - "remote"
+    - "work from home"
+    - "anywhere"
+  no_keywords:
+    - "100% presencial"
+    - "exclusivamente presencial"
+    - "no remoto"
+  yes_sources: []

@@ -1,0 +1,61 @@
+{
+  "data": [
+    {
+      "id": "principal-engineer-cocoon-remote",
+      "type": "job",
+      "attributes": {
+        "title": "Principal Backend Architect (AI-Native)",
+        "description": "<p>Looking for a Senior Backend Architect to lead technical design.</p><p>We strongly value the use of modern AI-assisted development tools like GitHub Copilot and Cursor.</p>",
+        "company": {
+          "data": {
+            "id": 20578,
+            "type": "company",
+            "attributes": {
+              "name": "Cocoon Labs"
+            }
+          }
+        },
+        "remote": true,
+        "remote_modality": "remote_local",
+        "countries": ["Argentina", "Remote"],
+        "min_salary": 7000,
+        "max_salary": 9500,
+        "published_at": 1740000000
+      },
+      "links": {
+        "public_url": "https://www.getonbrd.com/jobs/principal-engineer-cocoon-remote"
+      }
+    },
+    {
+      "id": "data-analyst-bi",
+      "type": "job",
+      "attributes": {
+        "title": "Data Analyst Power BI",
+        "description": "<p>Creación de tableros y modelos de datos en SQL Server y Power BI.</p>",
+        "company": {
+          "data": {
+            "id": 10420,
+            "type": "company",
+            "attributes": {
+              "name": "Fintech Global"
+            }
+          }
+        },
+        "remote": false,
+        "remote_modality": "on_site",
+        "countries": ["Argentina"],
+        "min_salary": null,
+        "max_salary": null,
+        "published_at": 1740100000
+      },
+      "links": {
+        "public_url": "https://www.getonbrd.com/jobs/data-analyst-bi"
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per_page": 2,
+    "total_pages": 1
+  }
+}

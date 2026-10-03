@@ -1,0 +1,23 @@
+search:
+  locations:
+    - "Córdoba"
+    - "Argentina"
+    - "Remoto"
+  max_pages_per_source: 3
+  delay_range_seconds: [1.5, 3.5]
+  timeout_seconds: 15
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 job0t/0.1.0"
+
+sources:
+  computrabajo:
+    enabled: true
+    base_url: "https://ar.computrabajo.com"
+  getonboard:
+    enabled: true
+    base_url: "https://www.getonbrd.com/api/v0"
+
+output:
+  directory: "output"
+  formats:
+    - "xlsx"
+    - "csv"
