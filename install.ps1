@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🤖 job0t — Instalador Universal para Windows (PowerShell)
+# job0t — Instalador Universal para Windows (PowerShell)
 # Repositorio: https://github.com/ivanlopez0k/job0t
 # Uso: irm https://raw.githubusercontent.com/ivanlopez0k/job0t/main/install.ps1 | iex
 # ==============================================================================
@@ -11,11 +11,23 @@ try {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 } catch {}
 
+$Logo = @'
+    o8o            .o8         .oooo.       .   
+    `"'           "888        d8P'`Y8b    .o8   
+   oooo  .ooooo.   888oooo.  888    888 .o888oo 
+   `888 d88' `88b  d88' `88b 888    888   888   
+    888 888   888  888   888 888    888   888   
+    888 888   888  888   888 `88b  d88'   888 . 
+    888 `Y8bod8P'  `Y8bod8P'  `Y8bd8P'    "888" 
+    888                                         
+.o. 88P                                         
+`Y888P                                          
+'@
+
 Write-Host ""
-Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   🤖 job0t — Instalador Rápido para Windows              " -ForegroundColor Cyan
-Write-Host "   Buscador, clasificador y exportador de empleo          " -ForegroundColor DarkCyan
-Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host $Logo -ForegroundColor Cyan
+Write-Host "   Buscador, clasificador y exportador de empleo" -ForegroundColor DarkCyan
+Write-Host "----------------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # 1. Detección de Python
@@ -39,7 +51,7 @@ function Find-Python {
 $PythonCmd = Find-Python
 
 if (-not $PythonCmd) {
-    Write-Host "Python 3.10+ no fue encontrado en tu sistema." -ForegroundColor Yellow
+    Write-Host "Python 3.10 o superior no fue detectado en el sistema." -ForegroundColor Yellow
     $WingetCmd = Get-Command winget -ErrorAction SilentlyContinue
 
     if ($WingetCmd) {
@@ -50,15 +62,15 @@ if (-not $PythonCmd) {
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
             $PythonCmd = Find-Python
         } catch {
-            Write-Host "No se pudo instalar automáticamente vía winget." -ForegroundColor Red
+            Write-Host "No se pudo completar la instalación automática vía winget." -ForegroundColor Red
         }
     }
 
     if (-not $PythonCmd) {
         Write-Host ""
-        Write-Host "❌ Error: Necesitás tener Python 3.10 o superior instalado." -ForegroundColor Red
-        Write-Host "Descargalo gratis en: https://www.python.org/downloads/" -ForegroundColor White
-        Write-Host "IMPORTANTE: Al instalarlo, marcá la casilla 'Add python.exe to PATH'." -ForegroundColor Yellow
+        Write-Host "Se requiere Python 3.10 o superior para continuar." -ForegroundColor Red
+        Write-Host "Podés descargarlo desde el sitio oficial: https://www.python.org/downloads/" -ForegroundColor White
+        Write-Host "Asegurate de marcar la opción 'Add Python to PATH' durante la instalación." -ForegroundColor Yellow
         Write-Host ""
         exit 1
     }
@@ -77,12 +89,12 @@ New-Item -ItemType Directory -Force -Path $Job0tHome | Out-Null
 New-Item -ItemType Directory -Force -Path $BinDir     | Out-Null
 
 # 3. Descargar / Actualizar el código fuente de job0t
-Write-Host "[3/5] Descargando la última versión de job0t..." -ForegroundColor Yellow
+Write-Host "[3/5] Descargando la versión más reciente de job0t..." -ForegroundColor Yellow
 $GitCmd = Get-Command git -ErrorAction SilentlyContinue
 
 if ($GitCmd) {
     if (Test-Path (Join-Path $AppDir ".git")) {
-        Write-Host "  -> Actualizando repositorio existente con git pull..." -ForegroundColor Gray
+        Write-Host "  -> Actualizando repositorio existente..." -ForegroundColor Gray
         git -C $AppDir pull --quiet
     } else {
         if (Test-Path $AppDir) { Remove-Item -Recurse -Force $AppDir }
@@ -103,7 +115,7 @@ if ($GitCmd) {
     Remove-Item -Recurse -Force $TempExtract
 }
 
-Write-Host "  -> Código fuente descargado en: $AppDir" -ForegroundColor Green
+Write-Host "  -> Código fuente listo en: $AppDir" -ForegroundColor Green
 
 # 4. Crear entorno virtual aislado e instalar dependencias
 Write-Host "[4/5] Configurando entorno virtual e instalando dependencias..." -ForegroundColor Yellow
@@ -113,16 +125,16 @@ if (-not (Test-Path $VenvDir)) {
 
 $VenvPython = Join-Path $VenvDir "Scripts\python.exe"
 if (-not (Test-Path $VenvPython)) {
-    Write-Host "❌ Error al crear el entorno virtual en $VenvDir" -ForegroundColor Red
+    Write-Host "No se pudo inicializar el entorno virtual en $VenvDir" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "  -> Instalando paquetes de Python (puede demorar unos segundos)..." -ForegroundColor Gray
+Write-Host "  -> Instalando paquetes requeridos..." -ForegroundColor Gray
 & $VenvPython -m pip install --upgrade pip --quiet
 & $VenvPython -m pip install -e $AppDir --quiet
 
 # 5. Generar wrappers ejecutables y agregarlos al PATH
-Write-Host "[5/5] Registrando el comando 'job0t' en tu sistema..." -ForegroundColor Yellow
+Write-Host "[5/5] Registrando el comando 'job0t' en el sistema..." -ForegroundColor Yellow
 
 $CmdWrapper = Join-Path $BinDir "job0t.cmd"
 $PsWrapper  = Join-Path $BinDir "job0t.ps1"
@@ -138,20 +150,19 @@ $CurrentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 if ($CurrentPath -notlike "*$BinDir*") {
     $NewPath = if ([string]::IsNullOrEmpty($CurrentPath)) { $BinDir } else { "$CurrentPath;$BinDir" }
     [Environment]::SetEnvironmentVariable("PATH", $NewPath, "User")
-    Write-Host "  -> Directorio $BinDir añadido a tu PATH de usuario." -ForegroundColor Green
+    Write-Host "  -> Directorio $BinDir agregado al PATH de usuario." -ForegroundColor Green
 }
 $env:PATH = "$env:PATH;$BinDir"
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "   🎉 ¡Instalación de job0t completada con éxito!         " -ForegroundColor Green
+Write-Host "   Instalación completada exitosamente                    " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Para empezar a buscar ofertas:" -ForegroundColor White
-Write-Host "  1. Abrí una nueva terminal de PowerShell o CMD." -ForegroundColor Cyan
-Write-Host "  2. Escribí y dale Enter a:" -ForegroundColor Cyan
-Write-Host "         job0t run" -ForegroundColor Yellow -NoNewline
+Write-Host "Para comenzar a utilizar job0t:" -ForegroundColor White
+Write-Host "  1. Abrí una nueva ventana de terminal (PowerShell o CMD)." -ForegroundColor Cyan
+Write-Host "  2. Ejecutá el comando:" -ForegroundColor Cyan
+Write-Host "         job0t run" -ForegroundColor Yellow
 Write-Host ""
-Write-Host ""
-Write-Host "¡Listo, hermano! Ya podés usar job0t desde cualquier carpeta." -ForegroundColor Green
+Write-Host "Ya podés ejecutar job0t desde cualquier directorio." -ForegroundColor Green
 Write-Host ""

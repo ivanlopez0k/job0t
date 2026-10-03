@@ -65,9 +65,23 @@ def _prompt_interactive_seniority() -> Optional[str]:
     return choice
 
 
+JOB0T_LOGO = r"""
+    o8o            .o8         .oooo.       .   
+    `"'           "888        d8P'`Y8b    .o8   
+   oooo  .ooooo.   888oooo.  888    888 .o888oo 
+   `888 d88' `88b  d88' `88b 888    888   888   
+    888 888   888  888   888 888    888   888   
+    888 888   888  888   888 `88b  d88'   888 . 
+    888 `Y8bod8P'  `Y8bod8P'  `Y8bd8P'    "888" 
+    888                                         
+.o. 88P                                         
+`Y888P                                          
+"""
+
+
 @app.callback()
 def main_callback():
-    """🤖 job0t — Herramienta local para buscar, clasificar y exportar ofertas laborales."""
+    """job0t — Herramienta local para buscar, clasificar y exportar ofertas laborales."""
     pass
 
 
@@ -117,6 +131,7 @@ def run(
     ),
 ):
     """Ejecuta la búsqueda, clasificación y exportación de ofertas laborales."""
+    console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
     console.print(
         Panel(
             "[bold white]job0t[/bold white] — [green]Buscador & Clasificador de Empleo[/green]\n"

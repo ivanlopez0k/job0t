@@ -1,4 +1,17 @@
-# 🤖 job0t
+```text
+    o8o            .o8         .oooo.       .   
+    `"'           "888        d8P'`Y8b    .o8   
+   oooo  .ooooo.   888oooo.  888    888 .o888oo 
+   `888 d88' `88b  d88' `88b 888    888   888   
+    888 888   888  888   888 888    888   888   
+    888 888   888  888   888 `88b  d88'   888 . 
+    888 `Y8bod8P'  `Y8bod8P'  `Y8bd8P'    "888" 
+    888                                         
+.o. 88P                                         
+`Y888P                                          
+```
+
+# job0t — Buscador & Clasificador de Empleo
 
 > Herramienta CLI local en Python para buscar ofertas laborales en múltiples portales (Computrabajo, Get on Board, etc.), normalizarlas, clasificarlas con banderas inteligentes (`AI FRIENDLY`, `FREELANCE`, `REMOTO`) y generar un reporte en **Excel (.xlsx)** y **CSV** con enlaces clickeables, dropdown de seguimiento y formato condicional.
 
