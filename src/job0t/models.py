@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import hashlib
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -66,7 +66,7 @@ class FilterOptions(BaseModel):
     only_ai: bool = False
     only_freelance: bool = False
     only_remoto: bool = False
-    seniority: Optional[str] = None
+    seniority: Optional[Union[str, List[str]]] = None
     export_format: str = "both"  # "xlsx", "csv", "both"
     filename: Optional[str] = None  # Nombre base sin extensión
     max_pages: Optional[int] = None

@@ -1,7 +1,8 @@
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 import questionary
 from rich.console import Console
 from rich.panel import Panel
@@ -26,6 +27,17 @@ app = typer.Typer(
     add_completion=False,
 )
 console = Console()
+
+
+def _clear_terminal() -> None:
+    """Limpia la terminal completamente (pantalla + historial de scrollback)."""
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
+    # Secuencia ANSI para limpiar scrollback buffer (\033[3J), mover a inicio (\033[H) y limpiar pantalla (\033[2J)
+    sys.stdout.write("\033[3J\033[H\033[2J")
+    sys.stdout.flush()
 
 
 def _prompt_interactive_categories() -> List[str]:
@@ -108,42 +120,45 @@ def _prompt_interactive_categories() -> List[str]:
     return selected or []
 
 
-def _prompt_interactive_seniority() -> Optional[str]:
-    """Muestra un menú interactivo para elegir el nivel de seniority deseado."""
+def _prompt_interactive_seniority() -> List[str]:
+    """Muestra un menú interactivo con casillas de verificación para elegir uno o varios seniorities."""
     choices = [
-        questionary.Choice(title="[1] (Recomendado) Todos / No filtrar", value="todos"),
-        questionary.Choice(title="[2] Junior", value="junior"),
-        questionary.Choice(title="[3] Semi Senior (SSR)", value="semi senior"),
-        questionary.Choice(title="[4] Senior (SR)", value="senior"),
-        questionary.Choice(title="[5] Trainee / Entry", value="trainee"),
+        questionary.Choice(title="Trainee / Entry", value="trainee"),
+        questionary.Choice(title="Junior", value="junior"),
+        questionary.Choice(title="Semi Senior (SSR)", value="semi senior"),
+        questionary.Choice(title="Senior (SR)", value="senior"),
     ]
     console.print("\n[bold cyan]Selector de Seniority[/bold cyan]")
-    choice = questionary.select(
-        "Seleccioná el seniority deseado (Navegá con flechas ↑/↓ y presioná ENTER para confirmar):",
+    selected = questionary.checkbox(
+        "Seleccioná los niveles deseados (Espacio para marcar, Enter para confirmar. Si no marcás ninguno, busca todos):",
         choices=choices,
-        default=choices[0],
     ).ask()
 
-    if not choice or choice in ("todos", "(recomendado) todos / no filtrar"):
-        return None
-    return choice
+    return selected or []
 
 
 def _prompt_interactive_format() -> str:
-    """Muestra un menú interactivo para elegir el formato de exportación."""
+    """Muestra un menú interactivo con casillas de verificación para elegir el formato de descarga."""
     choices = [
-        questionary.Choice(title="[1] Excel (.xlsx)", value="xlsx"),
-        questionary.Choice(title="[2] CSV (.csv)", value="csv"),
-        questionary.Choice(title="[3] (Recomendado) Ambos formatos (.xlsx y .csv)", value="both"),
+        questionary.Choice(title="Excel (.xlsx)", value="xlsx"),
+        questionary.Choice(title="CSV (.csv)", value="csv"),
     ]
     console.print("\n[bold cyan]Formato de Descarga[/bold cyan]")
-    choice = questionary.select(
-        "¿En qué formato querés guardar las ofertas? (Navegá con ↑/↓ y presioná ENTER):",
+    selected = questionary.checkbox(
+        "Seleccioná el/los formatos que querés descargar (Espacio para marcar, Enter para confirmar):",
         choices=choices,
-        default=choices[0],
     ).ask()
 
-    return choice or "both"
+    if not selected:
+        console.print("[dim]No marcaste ninguno: se exportarán ambos formatos (.xlsx y .csv)[/dim]")
+        return "both"
+    if "xlsx" in selected and "csv" in selected:
+        return "both"
+    if "xlsx" in selected:
+        return "xlsx"
+    if "csv" in selected:
+        return "csv"
+    return "both"
 
 
 def _prompt_interactive_filename() -> str:
@@ -236,7 +251,7 @@ def run(
     ),
 ):
     """Ejecuta la búsqueda, clasificación y exportación de ofertas laborales."""
-    console.clear()
+    _clear_terminal()
     console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
     console.print(
         Panel(
@@ -276,8 +291,17 @@ def run(
         selected_filename = _prompt_interactive_filename()
 
     console.print(f"\n[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
-    if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
-        console.print(f"[bold]Seniority activo:[/bold] [blue]{selected_seniority.title()}[/blue]")
+    if selected_seniority:
+        if isinstance(selected_seniority, list):
+            if selected_seniority:
+                sen_str = ", ".join(s.title() for s in selected_seniority)
+                console.print(f"[bold]Seniority activo:[/bold] [blue]{sen_str}[/blue]")
+            else:
+                console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+        elif selected_seniority.lower() not in ("todos", "all", "none", "no"):
+            console.print(f"[bold]Seniority activo:[/bold] [blue]{selected_seniority.title()}[/blue]")
+        else:
+            console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
     else:
         console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
 
@@ -375,7 +399,7 @@ def update(
         update_via_zip,
     )
 
-    console.clear()
+    _clear_terminal()
     console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
     console.print(
         Panel(

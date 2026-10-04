@@ -112,6 +112,44 @@ def test_pipeline_runner_with_seniority_filter(tmp_path: Path):
     assert stats.seniority_count["Senior"] == 1
 
 
+def test_pipeline_runner_with_multi_seniority_list(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Senior Backend Engineer",
+            description="Python",
+            url="https://computrabajo.com/job/sr",
+            source="computrabajo",
+        ),
+        RawJob(
+            title="Junior Frontend Engineer",
+            description="React",
+            url="https://computrabajo.com/job/jr",
+            source="computrabajo",
+        ),
+        RawJob(
+            title="Semi Senior QA",
+            description="Cypress",
+            url="https://computrabajo.com/job/ssr",
+            source="computrabajo",
+        ),
+    ]
+
+    runner = PipelineRunner(scrapers=[MockScraper("computrabajo", raw_jobs)])
+    options = FilterOptions(
+        seniority=["junior", "semi senior"],
+        output_dir=str(tmp_path),
+    )
+
+    xlsx_path, csv_path, stats = runner.run(options)
+    assert stats.total_raw == 3
+    assert stats.total_filtered == 2
+    assert stats.total_unique == 2
+    assert "Junior" in stats.seniority_count
+    assert "Semi Senior" in stats.seniority_count
+    assert "Senior" not in stats.seniority_count
+
+
+
 def test_pipeline_runner_export_xlsx_only(tmp_path: Path):
     raw_jobs = [
         RawJob(

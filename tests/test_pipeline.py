@@ -283,6 +283,16 @@ def test_filter_jobs_by_seniority_strict():
     res_todos = filter_jobs(jobs, FilterOptions(seniority="todos"))
     assert len(res_todos) == 5
 
+    # Filtro múltiple mediante lista (ej: checkbox interactivo)
+    res_list = filter_jobs(jobs, FilterOptions(seniority=["junior", "semi senior"]))
+    assert len(res_list) == 2
+    assert {j.title for j in res_list} == {"Dev JR", "Dev SSR"}
+
+    # Filtro múltiple mediante string separado por comas
+    res_str_multi = filter_jobs(jobs, FilterOptions(seniority="junior, ssr"))
+    assert len(res_str_multi) == 2
+    assert {j.title for j in res_str_multi} == {"Dev JR", "Dev SSR"}
+
     # Sin filtro de seniority incluye todas
     res_none = filter_jobs(jobs, FilterOptions())
     assert len(res_none) == 5
