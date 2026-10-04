@@ -69,7 +69,7 @@ class PipelineRunner:
         # Si no matcheó ninguna clave específica, usar todas
         return resolved or list(self.categories_config.values())
 
-    def run(self, options: FilterOptions) -> Tuple[Path, Path, RunStats]:
+    def run(self, options: FilterOptions) -> Tuple[Optional[Path], Optional[Path], RunStats]:
         """Ejecuta el ciclo completo: scrape -> normalize -> classify -> flags -> seniority -> filter -> dedupe -> export."""
         target_categories = self._resolve_target_categories(options.categories)
 
@@ -126,11 +126,25 @@ class PipelineRunner:
         out_dir = Path(out_dir_str)
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        timestamp_str = datetime.now().strftime("%Y-%m-%d_%H%M")
-        xlsx_path = out_dir / f"jobs_{timestamp_str}.xlsx"
-        csv_path = out_dir / f"jobs_{timestamp_str}.csv"
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        default_name = f"jobs_{date_str}"
+        raw_name = options.filename.strip() if options.filename and options.filename.strip() else default_name
+        if raw_name.lower().endswith(".xlsx") or raw_name.lower().endswith(".csv"):
+            base_name = Path(raw_name).stem
+        else:
+            base_name = raw_name
 
-        ExcelExporter().export(unique_jobs, xlsx_path, stats)
-        CsvExporter().export(unique_jobs, csv_path, stats)
+        fmt = (options.export_format or "both").lower().strip()
+        xlsx_path: Optional[Path] = None
+        csv_path: Optional[Path] = None
+
+        if fmt in ("xlsx", "excel", "both", "ambos", "all", "todos"):
+            xlsx_path = out_dir / f"{base_name}.xlsx"
+            ExcelExporter().export(unique_jobs, xlsx_path, stats)
+
+        if fmt in ("csv", "both", "ambos", "all", "todos"):
+            csv_path = out_dir / f"{base_name}.csv"
+            CsvExporter().export(unique_jobs, csv_path, stats)
 
         return xlsx_path, csv_path, stats
+

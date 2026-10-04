@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 import questionary
@@ -128,6 +129,35 @@ def _prompt_interactive_seniority() -> Optional[str]:
     return choice
 
 
+def _prompt_interactive_format() -> str:
+    """Muestra un menú interactivo para elegir el formato de exportación."""
+    choices = [
+        questionary.Choice(title="[1] Excel (.xlsx)", value="xlsx"),
+        questionary.Choice(title="[2] CSV (.csv)", value="csv"),
+        questionary.Choice(title="[3] (Recomendado) Ambos formatos (.xlsx y .csv)", value="both"),
+    ]
+    console.print("\n[bold cyan]Formato de Descarga[/bold cyan]")
+    choice = questionary.select(
+        "¿En qué formato querés guardar las ofertas? (Navegá con ↑/↓ y presioná ENTER):",
+        choices=choices,
+        default=choices[0],
+    ).ask()
+
+    return choice or "both"
+
+
+def _prompt_interactive_filename() -> str:
+    """Solicita el nombre del archivo de reporte (con fecha YYYY-MM-DD por defecto)."""
+    default_name = f"jobs_{datetime.now().strftime('%Y-%m-%d')}"
+    console.print("\n[bold cyan]Nombre del Archivo[/bold cyan]")
+    name = questionary.text(
+        f"Ingresá el nombre base del archivo (sin extensión, ENTER para '{default_name}'):",
+        default=default_name,
+    ).ask()
+
+    return name.strip() if name and name.strip() else default_name
+
+
 JOB0T_LOGO = r"""
     o8o            .o8         .oooo.       .   
     `"'           "888        d8P'`Y8b    .o8   
@@ -161,6 +191,18 @@ def run(
         "--seniority",
         "-s",
         help="Filtrar por seniority: trainee, junior, ssr, sr (o 'todos'). Si se omite en modo interactivo, se preguntará.",
+    ),
+    export_format: Optional[str] = typer.Option(
+        None,
+        "--format",
+        "-F",
+        help="Formato de exportación: 'xlsx', 'csv' o 'both'. Si se omite en modo interactivo, se preguntará.",
+    ),
+    filename: Optional[str] = typer.Option(
+        None,
+        "--filename",
+        "-n",
+        help="Nombre base del archivo de salida sin extensión (ej: 'jobs_2026-10-04'). Por defecto usa la fecha actual.",
     ),
     ai_friendly: bool = typer.Option(
         False,
@@ -221,11 +263,27 @@ def run(
     if is_interactive and selected_seniority is None:
         selected_seniority = _prompt_interactive_seniority()
 
+    # 3. Determinar formato de exportación
+    selected_format = export_format
+    if is_interactive and selected_format is None:
+        selected_format = _prompt_interactive_format()
+    elif not selected_format:
+        selected_format = "both"
+
+    # 4. Determinar nombre de archivo
+    selected_filename = filename
+    if is_interactive and selected_filename is None:
+        selected_filename = _prompt_interactive_filename()
+
     console.print(f"\n[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
     if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
         console.print(f"[bold]Seniority activo:[/bold] [blue]{selected_seniority.title()}[/blue]")
     else:
         console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+
+    console.print(f"[bold]Formato de descarga:[/bold] [green]{selected_format.upper()}[/green]")
+    if selected_filename:
+        console.print(f"[bold]Nombre de archivo:[/bold] [cyan]{selected_filename}[/cyan]")
 
     filter_flags_msg = []
     if ai_friendly:
@@ -244,16 +302,18 @@ def run(
         only_freelance=freelance,
         only_remoto=remoto,
         seniority=selected_seniority,
+        export_format=selected_format,
+        filename=selected_filename,
         max_pages=max_pages,
         output_dir=output_dir,
     )
 
-    # 3. Ejecutar Runner con indicador de progreso
+    # 5. Ejecutar Runner con indicador de progreso
     runner = PipelineRunner()
     with console.status("[bold green]Buscando y procesando ofertas laborales...", spinner="dots"):
         xlsx_path, csv_path, stats = runner.run(options)
 
-    # 4. Mostrar Resumen de Resultados
+    # 6. Mostrar Resumen de Resultados
     console.print("\n[bold green][OK] Búsqueda finalizada exitosamente[/bold green]\n")
 
     table = Table(title="Resumen de Ejecución", border_style="dim")
@@ -288,8 +348,11 @@ def run(
         console.print(sen_table)
 
     console.print("\n[bold]Reportes generados:[/bold]")
-    console.print(f"  [Excel] {xlsx_path.resolve()}")
-    console.print(f"  [CSV]   {csv_path.resolve()}\n")
+    if xlsx_path:
+        console.print(f"  [Excel] {xlsx_path.resolve()}")
+    if csv_path:
+        console.print(f"  [CSV]   {csv_path.resolve()}")
+    console.print()
 
 
 @app.command(name="update")

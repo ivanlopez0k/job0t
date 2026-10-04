@@ -67,6 +67,8 @@ class FilterOptions(BaseModel):
     only_freelance: bool = False
     only_remoto: bool = False
     seniority: Optional[str] = None
+    export_format: str = "both"  # "xlsx", "csv", "both"
+    filename: Optional[str] = None  # Nombre base sin extensión
     max_pages: Optional[int] = None
     output_dir: Optional[str] = None
 

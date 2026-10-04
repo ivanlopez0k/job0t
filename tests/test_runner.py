@@ -1,5 +1,6 @@
 """Tests unitarios para el PipelineRunner de job0t."""
 
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from job0t.config import AppConfig, CategoryDefinition, load_categories_config, load_flags_config
@@ -109,3 +110,93 @@ def test_pipeline_runner_with_seniority_filter(tmp_path: Path):
     assert stats.total_unique == 1
     assert "Senior" in stats.seniority_count
     assert stats.seniority_count["Senior"] == 1
+
+
+def test_pipeline_runner_export_xlsx_only(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Backend Dev",
+            description="Python FastAPI",
+            url="https://computrabajo.com/job/1",
+            source="computrabajo",
+        )
+    ]
+    runner = PipelineRunner(scrapers=[MockScraper("computrabajo", raw_jobs)])
+    options = FilterOptions(
+        export_format="xlsx",
+        output_dir=str(tmp_path),
+    )
+    xlsx_path, csv_path, stats = runner.run(options)
+
+    assert xlsx_path is not None
+    assert xlsx_path.exists()
+    assert csv_path is None
+
+
+def test_pipeline_runner_export_csv_only(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Backend Dev",
+            description="Python FastAPI",
+            url="https://computrabajo.com/job/1",
+            source="computrabajo",
+        )
+    ]
+    runner = PipelineRunner(scrapers=[MockScraper("computrabajo", raw_jobs)])
+    options = FilterOptions(
+        export_format="csv",
+        output_dir=str(tmp_path),
+    )
+    xlsx_path, csv_path, stats = runner.run(options)
+
+    assert xlsx_path is None
+    assert csv_path is not None
+    assert csv_path.exists()
+
+
+def test_pipeline_runner_default_filename_has_only_date(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Backend Dev",
+            description="Python FastAPI",
+            url="https://computrabajo.com/job/1",
+            source="computrabajo",
+        )
+    ]
+    runner = PipelineRunner(scrapers=[MockScraper("computrabajo", raw_jobs)])
+    options = FilterOptions(output_dir=str(tmp_path))
+    xlsx_path, csv_path, _ = runner.run(options)
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    expected_xlsx_name = f"jobs_{today_str}.xlsx"
+    expected_csv_name = f"jobs_{today_str}.csv"
+
+    assert xlsx_path is not None
+    assert xlsx_path.name == expected_xlsx_name
+    assert csv_path is not None
+    assert csv_path.name == expected_csv_name
+
+
+def test_pipeline_runner_custom_filename_with_and_without_extension(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Backend Dev",
+            description="Python FastAPI",
+            url="https://computrabajo.com/job/1",
+            source="computrabajo",
+        )
+    ]
+    runner = PipelineRunner(scrapers=[MockScraper("computrabajo", raw_jobs)])
+
+    # Sin extensión
+    options1 = FilterOptions(filename="busqueda_2026-10-04", output_dir=str(tmp_path))
+    xlsx1, csv1, _ = runner.run(options1)
+    assert xlsx1 is not None and xlsx1.name == "busqueda_2026-10-04.xlsx"
+    assert csv1 is not None and csv1.name == "busqueda_2026-10-04.csv"
+
+    # Con extensión manual (.xlsx)
+    options2 = FilterOptions(filename="busqueda_2026-10-04.xlsx", output_dir=str(tmp_path))
+    xlsx2, csv2, _ = runner.run(options2)
+    assert xlsx2 is not None and xlsx2.name == "busqueda_2026-10-04.xlsx"
+    assert csv2 is not None and csv2.name == "busqueda_2026-10-04.csv"
+
