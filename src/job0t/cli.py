@@ -28,16 +28,79 @@ console = Console()
 
 
 def _prompt_interactive_categories() -> List[str]:
-    """Muestra un menú interactivo con casillas de verificación para elegir categorías."""
-    categories_cfg = load_categories_config()
+    """Muestra un menú interactivo con casillas de verificación para elegir categorías organizadas en cajas."""
     choices = [
-        questionary.Choice(title=f"{v.label} ({k})", value=k)
-        for k, v in categories_cfg.items()
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DESARROLLO DE SOFTWARE                                │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Desarrollo (Cualquier especialidad)", value="desarrollo"),
+        questionary.Choice(title="Desarrollo Frontend", value="desarrollo_frontend"),
+        questionary.Choice(title="Desarrollo Backend", value="desarrollo_backend"),
+        questionary.Choice(title="Desarrollo Fullstack", value="desarrollo_fullstack"),
+        questionary.Choice(title="Desarrollo Mobile (iOS / Android)", value="desarrollo_mobile"),
+        questionary.Choice(title="Desarrollo de Videojuegos", value="desarrollo_gamedev"),
+        questionary.Choice(title="Desarrollo Desktop", value="desarrollo_desktop"),
+        questionary.Choice(title="Inteligencia Artificial & ML", value="desarrollo_ai"),
+        questionary.Choice(title="Ciberseguridad & AppSec", value="desarrollo_ciberseguridad"),
+        questionary.Choice(title="Web3 & Blockchain", value="desarrollo_web3"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DISEÑO                                                │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Diseño (Cualquier especialidad)", value="diseno"),
+        questionary.Choice(title="Diseño UX / UI", value="diseno_ux_ui"),
+        questionary.Choice(title="Diseño de Producto Digital", value="diseno_product"),
+        questionary.Choice(title="Diseño UX Research & Content", value="diseno_ux_research"),
+        questionary.Choice(title="Diseño Gráfico & Branding", value="diseno_grafico"),
+        questionary.Choice(title="Diseño Web & No-Code", value="diseno_web_nocode"),
+        questionary.Choice(title="Diseño Motion & Animación", value="diseno_motion"),
+        questionary.Choice(title="Modelado 3D & Renders", value="diseno_3d"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DATOS & ANALÍTICA                                     │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Data (Cualquier especialidad)", value="data"),
+        questionary.Choice(title="Data Analytics & BI", value="data_analytics"),
+        questionary.Choice(title="Data Engineering", value="data_engineering"),
+        questionary.Choice(title="Data Science & Modelos", value="data_science"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  QA & TESTING                                          │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo QA & Testing", value="qa"),
+        questionary.Choice(title="QA Automation", value="qa_automation"),
+        questionary.Choice(title="QA Manual", value="qa_manual"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  CLOUD, DEVOPS & INFRAESTRUCTURA                       │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Cloud & DevOps", value="devops"),
+        questionary.Choice(title="DevOps & SRE", value="devops_sre"),
+        questionary.Choice(title="Cloud Engineering", value="cloud_engineering"),
+        questionary.Choice(title="Administración de Sistemas", value="sysadmin"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  PRODUCTO, GESTIÓN & LIDERAZGO                         │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Product Management", value="producto_management"),
+        questionary.Choice(title="Project Management & Agile", value="producto_agile"),
+        questionary.Choice(title="Tech Lead & Liderazgo", value="tech_lead"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  SOPORTE & OPERACIONES IT                              │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Soporte IT & Mesa de Ayuda", value="soporte"),
     ]
 
-    console.print("[bold cyan]Selector Interactivo de Categorías[/bold cyan]")
+    console.print("\n[bold cyan]Selector de Categorías & Especialidades[/bold cyan]")
     selected = questionary.checkbox(
-        "Seleccioná una o varias categorías (Espacio para marcar, Enter para confirmar):",
+        "Seleccioná las áreas de tu interés (Espacio para marcar, Enter para confirmar):",
         choices=choices,
     ).ask()
 
