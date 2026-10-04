@@ -47,19 +47,24 @@ def filter_jobs(
 
         # 5. Filtro por Seniority (Estricto - Opción A)
         if options.seniority:
-            target_sen = options.seniority.strip().lower()
-            if target_sen not in ("todos", "all", "none", "no", "cualquiera", "indistinto"):
-                if target_sen in ("jr", "junior", "entry", "entry-level"):
-                    target_sen = "junior"
-                elif target_sen in ("ssr", "semi", "semi-senior", "semi_senior", "semisenior"):
-                    target_sen = "semi senior"
-                elif target_sen in ("sr", "senior", "lead", "principal", "staff"):
-                    target_sen = "senior"
-                elif target_sen in ("trainee", "intern", "pasante", "pasantia"):
-                    target_sen = "trainee"
+            raw_sen = options.seniority.strip().lower()
+            if raw_sen not in ("todos", "all", "none", "no", "cualquiera", "indistinto", "(recomendado) todos / no filtrar"):
+                tokens = [t.strip() for t in raw_sen.replace("/", ",").split(",") if t.strip()]
+                target_levels = set()
 
-                if job.seniority.strip().lower() != target_sen:
-                    continue
+                for tok in tokens:
+                    if any(k in tok for k in ("trainee", "entry", "intern", "pasante")):
+                        target_levels.add("trainee")
+                    elif any(k in tok for k in ("ssr", "semi")):
+                        target_levels.add("semi senior")
+                    elif any(k in tok for k in ("jr", "junior")):
+                        target_levels.add("junior")
+                    elif any(k in tok for k in ("sr", "senior", "lead", "principal", "staff")):
+                        target_levels.add("senior")
+
+                if target_levels:
+                    if job.seniority.strip().lower() not in target_levels:
+                        continue
 
         filtered.append(job)
 

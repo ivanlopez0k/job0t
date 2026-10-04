@@ -47,20 +47,20 @@ def _prompt_interactive_categories() -> List[str]:
 def _prompt_interactive_seniority() -> Optional[str]:
     """Muestra un menú interactivo para elegir el nivel de seniority deseado."""
     choices = [
-        "(Recomendado) Todos / No filtrar",
-        "Junior",
-        "Semi Senior (SSR)",
-        "Senior (SR)",
-        "Trainee / Entry",
+        questionary.Choice(title="[1] (Recomendado) Todos / No filtrar", value="todos"),
+        questionary.Choice(title="[2] Junior", value="junior"),
+        questionary.Choice(title="[3] Semi Senior (SSR)", value="semi senior"),
+        questionary.Choice(title="[4] Senior (SR)", value="senior"),
+        questionary.Choice(title="[5] Trainee / Entry", value="trainee"),
     ]
     console.print("\n[bold cyan]Selector de Seniority[/bold cyan]")
     choice = questionary.select(
-        "Seleccioná el seniority deseado:",
+        "Seleccioná el seniority deseado (Navegá con flechas ↑/↓ y presioná ENTER para confirmar):",
         choices=choices,
-        default="(Recomendado) Todos / No filtrar",
+        default=choices[0],
     ).ask()
 
-    if not choice or choice.startswith("(Recomendado)"):
+    if not choice or choice in ("todos", "(recomendado) todos / no filtrar"):
         return None
     return choice
 
@@ -158,7 +158,11 @@ def run(
     if is_interactive and selected_seniority is None:
         selected_seniority = _prompt_interactive_seniority()
 
-    console.print(f"[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
+    console.print(f"\n[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
+    if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
+        console.print(f"[bold]Seniority activo:[/bold] [blue]{selected_seniority.title()}[/blue]")
+    else:
+        console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
 
     filter_flags_msg = []
     if ai_friendly:
@@ -167,11 +171,9 @@ def run(
         filter_flags_msg.append("[cyan]Freelance[/cyan]")
     if remoto:
         filter_flags_msg.append("[magenta]Remoto[/magenta]")
-    if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
-        filter_flags_msg.append(f"[blue]Seniority: {selected_seniority}[/blue]")
 
     if filter_flags_msg:
-        console.print(f"[bold]Filtros aplicados:[/bold] {' + '.join(filter_flags_msg)}")
+        console.print(f"[bold]Banderas activas:[/bold] {' + '.join(filter_flags_msg)}")
 
     options = FilterOptions(
         categories=selected_categories,
