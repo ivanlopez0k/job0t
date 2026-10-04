@@ -227,6 +227,90 @@ def run(
     console.print(f"  [CSV]   {csv_path.resolve()}\n")
 
 
+@app.command(name="update")
+def update(
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Fuerza la reinstalación y actualización incluso si el commit local coincide con el remoto.",
+    ),
+):
+    """Actualiza job0t a la versión más reciente publicada en GitHub."""
+    from job0t.updater import (
+        check_uncommitted_changes,
+        get_app_root,
+        get_current_git_branch,
+        get_local_commit_sha,
+        get_remote_commit_info,
+        update_via_git,
+        update_via_zip,
+    )
+
+    console.clear()
+    console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
+    console.print(
+        Panel(
+            "[bold white]job0t updater[/bold white] — [green]Actualizador Automático[/green]\n"
+            "[dim]Sincronización directa con el repositorio oficial en GitHub[/dim]",
+            border_style="cyan",
+        )
+    )
+
+    app_root = get_app_root()
+    is_git_repo = (app_root / ".git").exists()
+    branch = get_current_git_branch(app_root) or "main"
+
+    console.print(f"[dim]Ruta de instalación:[/dim] {app_root}")
+    if is_git_repo:
+        console.print(f"[dim]Rama activa:[/dim] {branch}")
+
+    # 1. Chequear cambios locales sin commitear (si es repo git)
+    if is_git_repo and check_uncommitted_changes(app_root):
+        console.print(
+            "\n[bold yellow]Atención:[/bold yellow] Tenés cambios locales sin guardar en tu copia de trabajo.\n"
+            "Por favor hacé un commit o 'git stash' antes de ejecutar el actualizador para evitar conflictos."
+        )
+        raise typer.Exit(code=1)
+
+    # 2. Consultar último commit remoto
+    with console.status("[bold cyan]Consultando actualizaciones en GitHub...", spinner="dots"):
+        local_sha = get_local_commit_sha(app_root)
+        remote_sha, remote_msg, err = get_remote_commit_info(branch)
+
+    if err:
+        console.print(f"\n[bold red]No se pudo verificar la actualización:[/bold red] {err}")
+        if not force:
+            raise typer.Exit(code=1)
+
+    if local_sha and remote_sha and local_sha == remote_sha and not force:
+        console.print("\n[bold green][OK] job0t ya se encuentra en la versión más reciente.[/bold green]")
+        console.print(f"Commit actual: [cyan]{local_sha[:7]}[/cyan] ({remote_msg})\n")
+        return
+
+    # 3. Mostrar información del nuevo commit a instalar
+    if remote_sha:
+        console.print(f"\n[bold green]Nueva versión encontrada:[/bold green] [cyan]{remote_sha[:7]}[/cyan]")
+        if remote_msg:
+            console.print(f"[dim]Mensaje:[/dim] {remote_msg}")
+
+    # 4. Ejecutar actualización
+    with console.status("[bold green]Descargando actualización y actualizando dependencias...", spinner="dots"):
+        if is_git_repo:
+            success, msg = update_via_git(app_root, branch)
+        else:
+            success, msg = update_via_zip(app_root, target_sha=remote_sha)
+
+    if success:
+        console.print("\n[bold green][OK] ¡job0t se actualizó exitosamente![/bold green]")
+        if remote_sha:
+            console.print(f"Versión activa: [cyan]{remote_sha[:7]}[/cyan]")
+        console.print("\nYa podés continuar usando [bold cyan]job0t run[/bold cyan].\n")
+    else:
+        console.print(f"\n[bold red]Ocurrió un error al actualizar:[/bold red] {msg}\n")
+        raise typer.Exit(code=1)
+
+
 def main():
     app()
 

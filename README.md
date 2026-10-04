@@ -158,6 +158,18 @@ python -m job0t run --categories diseno --freelance --seniority todos
 python -m job0t run --categories desarrollo --max-pages 1 --output-dir mis_ofertas
 ```
 
+### 3. Actualización en 1 Comando
+Para actualizar job0t a la versión más reciente publicada en GitHub (descarga cambios y sincroniza dependencias automáticamente):
+
+```bash
+job0t update
+```
+
+Si deseás forzar la reinstalación aunque ya estés en el último commit:
+```bash
+job0t update --force
+```
+
 ---
 
 ## ⚙️ Personalización de Reglas
