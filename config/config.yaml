@@ -15,6 +15,9 @@ sources:
   getonboard:
     enabled: true
     base_url: "https://www.getonbrd.com/api/v0"
+  jobicy:
+    enabled: true
+    base_url: "https://jobicy.com/api/v2/remote-jobs"
 
 output:
   directory: "output"

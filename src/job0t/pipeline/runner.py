@@ -29,6 +29,7 @@ from job0t.pipeline.seniority_detector import detect_seniority_for_all
 from job0t.scrapers.base import BaseScraper
 from job0t.scrapers.computrabajo import ComputrabajoScraper
 from job0t.scrapers.getonboard import GetOnBoardScraper
+from job0t.scrapers.jobicy import JobicyScraper
 
 logger = logging.getLogger("job0t.pipeline.runner")
 console = Console()
@@ -52,6 +53,7 @@ class PipelineRunner:
         self.scrapers = scrapers if scrapers is not None else [
             ComputrabajoScraper(),
             GetOnBoardScraper(),
+            JobicyScraper(),
         ]
 
     def _resolve_target_categories(self, selected_keys: List[str]) -> List[CategoryDefinition]:

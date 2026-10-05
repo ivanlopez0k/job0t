@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from job0t.config import AppConfig, CategoryDefinition
 from job0t.scrapers.computrabajo import ComputrabajoScraper
 from job0t.scrapers.getonboard import GetOnBoardScraper
+from job0t.scrapers.jobicy import JobicyScraper
 
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -140,3 +141,103 @@ def test_getonboard_search_mocked(monkeypatch):
     results = scraper.search(categories, config, max_pages=1)
     assert len(results) == 2
     assert results[0].title == "Principal Backend Architect (AI-Native)"
+
+
+def test_jobicy_parser():
+    fake_payload = {
+        "jobs": [
+            {
+                "id": 101,
+                "url": "https://jobicy.com/jobs/101-python-dev",
+                "jobSlug": "101-python-dev",
+                "jobTitle": "Senior Python Backend Engineer",
+                "companyName": "RemoteTech Inc",
+                "jobGeo": "LatAm / Anywhere",
+                "jobLevel": "Senior",
+                "jobDescription": "Desarrollo backend con FastAPI y PostgreSQL.",
+                "pubDate": "2026-10-05T12:00:00+00:00",
+                "salaryMin": 90000,
+                "salaryMax": 120000,
+                "salaryCurrency": "USD",
+                "salaryPeriod": "yearly",
+            },
+            {
+                "id": 102,
+                "url": "https://jobicy.com/jobs/102-qa-tester",
+                "jobSlug": "102-qa-tester",
+                "jobTitle": "Junior QA Automation",
+                "companyName": "Quality Corp",
+                "jobGeo": "Worldwide",
+                "jobLevel": "Junior",
+                "jobExcerpt": "Testing automatizado con Playwright.",
+                "pubDate": "2026-10-05T10:00:00+00:00",
+                "salaryMin": 0,
+                "salaryMax": 0,
+            },
+        ]
+    }
+
+    scraper = JobicyScraper()
+    jobs = scraper.parse_jobs_json(fake_payload)
+    assert len(jobs) == 2
+
+    job1 = jobs[0]
+    assert job1.title == "Senior Python Backend Engineer"
+    assert job1.company == "RemoteTech Inc"
+    assert job1.location == "LatAm / Anywhere"
+    assert job1.modality == "Remoto"
+    assert job1.salary == "$90,000 - $120,000 USD/año"
+    assert job1.source == "jobicy"
+    assert job1.raw_payload.get("job_level") == "Senior"
+
+    job2 = jobs[1]
+    assert job2.title == "Junior QA Automation"
+    assert job2.company == "Quality Corp"
+    assert job2.salary is None
+    assert job2.raw_payload.get("job_level") == "Junior"
+
+
+def test_jobicy_search_mocked(monkeypatch):
+    scraper = JobicyScraper()
+    config = AppConfig()
+    categories = [
+        CategoryDefinition(
+            label="Desarrollo de software",
+            search_terms=["developer"],
+            match_keywords=["developer"],
+            exclude_keywords=[],
+        )
+    ]
+
+    fake_json = {
+        "jobs": [
+            {
+                "id": 201,
+                "url": "https://jobicy.com/jobs/201-fullstack",
+                "jobTitle": "Fullstack Python React Developer",
+                "companyName": "Global Corp",
+                "jobGeo": "Worldwide",
+                "jobDescription": "Fullstack development.",
+            }
+        ]
+    }
+
+    class FakeResponse:
+        status_code = 200
+
+        def json(self):
+            return fake_json
+
+    mock_client = MagicMock()
+    mock_client.get.return_value = FakeResponse()
+    mock_client.__enter__.return_value = mock_client
+    mock_client.__exit__.return_value = None
+
+    monkeypatch.setattr("httpx.Client", lambda **kwargs: mock_client)
+
+    results = scraper.search(categories, config, max_pages=1)
+    assert len(results) == 1
+    assert results[0].title == "Fullstack Python React Developer"
+    assert results[0].source == "jobicy"
+    assert results[0].modality == "Remoto"
+

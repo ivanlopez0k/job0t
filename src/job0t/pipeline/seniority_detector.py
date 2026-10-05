@@ -40,12 +40,13 @@ def detect_seniority(job: Job, seniority_config: SeniorityConfig) -> Job:
                 job.seniority = level_def.label
                 return job
 
-    # 2. Prioridad Secundaria: Metadatos de API (Get on Board seniority_id)
+    # 2. Prioridad Secundaria: Metadatos de API (Get on Board seniority_id / Jobicy job_level)
     # 1=Trainee, 2=Junior, 3=Semi Senior, 4=Senior, 5=Expert/Lead
-    # Si viene en raw_payload
     seniority_id = None
+    job_level = None
     if hasattr(job, "raw_payload") and isinstance(job.raw_payload, dict):
         seniority_id = job.raw_payload.get("seniority_id")
+        job_level = str(job.raw_payload.get("job_level") or job.raw_payload.get("jobLevel") or "").lower().strip()
 
     if seniority_id == 1 and "trainee" in seniority_config:
         job.seniority = seniority_config["trainee"].label
@@ -59,6 +60,24 @@ def detect_seniority(job: Job, seniority_config: SeniorityConfig) -> Job:
     elif seniority_id in (4, 5) and "senior" in seniority_config:
         job.seniority = seniority_config["senior"].label
         return job
+
+    if job_level:
+        if any(w in job_level for w in ("senior", "lead", "principal", "expert", "director")):
+            if "senior" in seniority_config:
+                job.seniority = seniority_config["senior"].label
+                return job
+        elif any(w in job_level for w in ("mid", "semi")):
+            if "semi_senior" in seniority_config:
+                job.seniority = seniority_config["semi_senior"].label
+                return job
+        elif "junior" in job_level:
+            if "junior" in seniority_config:
+                job.seniority = seniority_config["junior"].label
+                return job
+        elif any(w in job_level for w in ("entry", "trainee", "intern")):
+            if "trainee" in seniority_config:
+                job.seniority = seniority_config["trainee"].label
+                return job
 
     # 3. Prioridad Terciaria: Descripción (solo señales explícitas al inicio)
     desc_start = job.description[:250]

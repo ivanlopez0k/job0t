@@ -246,6 +246,31 @@ def test_seniority_detection_gob_payload():
     assert detected.seniority == "Semi Senior"
 
 
+def test_seniority_detection_jobicy_payload():
+    cfg = load_seniority_config()
+
+    job_jobicy = Job(
+        title="Software Engineer",
+        description="Development of APIs.",
+        url="https://jobicy.com/jobs/999",
+        source="jobicy",
+        raw_payload={"job_level": "Senior"},
+    )
+    detected = detect_seniority(job_jobicy, cfg)
+    assert detected.seniority == "Senior"
+
+    job_jobicy_jr = Job(
+        title="Developer",
+        description="Entry role.",
+        url="https://jobicy.com/jobs/998",
+        source="jobicy",
+        raw_payload={"job_level": "Junior"},
+    )
+    detected_jr = detect_seniority(job_jobicy_jr, cfg)
+    assert detected_jr.seniority == "Junior"
+
+
+
 def test_filter_jobs_by_seniority_strict():
     job_sr = Job(title="Dev SR", seniority="Senior", url="https://example.com/1", source="test")
     job_ssr = Job(title="Dev SSR", seniority="Semi Senior", url="https://example.com/ssr", source="test")
