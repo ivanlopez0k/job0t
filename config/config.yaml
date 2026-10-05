@@ -18,6 +18,9 @@ sources:
   jobicy:
     enabled: true
     base_url: "https://jobicy.com/api/v2/remote-jobs"
+  remoteok:
+    enabled: true
+    base_url: "https://remoteok.com/api"
 
 output:
   directory: "output"

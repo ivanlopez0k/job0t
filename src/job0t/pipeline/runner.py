@@ -30,6 +30,7 @@ from job0t.scrapers.base import BaseScraper
 from job0t.scrapers.computrabajo import ComputrabajoScraper
 from job0t.scrapers.getonboard import GetOnBoardScraper
 from job0t.scrapers.jobicy import JobicyScraper
+from job0t.scrapers.remoteok import RemoteOKScraper
 
 logger = logging.getLogger("job0t.pipeline.runner")
 console = Console()
@@ -54,6 +55,7 @@ class PipelineRunner:
             ComputrabajoScraper(),
             GetOnBoardScraper(),
             JobicyScraper(),
+            RemoteOKScraper(),
         ]
 
     def _resolve_target_categories(self, selected_keys: List[str]) -> List[CategoryDefinition]:

@@ -7,6 +7,7 @@ from job0t.config import AppConfig, CategoryDefinition
 from job0t.scrapers.computrabajo import ComputrabajoScraper
 from job0t.scrapers.getonboard import GetOnBoardScraper
 from job0t.scrapers.jobicy import JobicyScraper
+from job0t.scrapers.remoteok import RemoteOKScraper
 
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -240,4 +241,98 @@ def test_jobicy_search_mocked(monkeypatch):
     assert results[0].title == "Fullstack Python React Developer"
     assert results[0].source == "jobicy"
     assert results[0].modality == "Remoto"
+
+
+def test_remoteok_parser():
+    fake_payload = [
+        {"legal": "Notice"},
+        {
+            "id": 501,
+            "position": "Staff DevOps Engineer",
+            "company": "CloudNative LLC",
+            "location": "Anywhere",
+            "salary_min": 140000,
+            "salary_max": 180000,
+            "tags": ["kubernetes", "aws", "terraform"],
+            "url": "https://remoteok.com/remote-jobs/501",
+            "description": "Infraestructura cloud y pipelines CI/CD.",
+            "date": "2026-10-05T14:00:00+00:00",
+            "epoch": 1728136800,
+        },
+        {
+            "id": 502,
+            "position": "UX UI Product Designer",
+            "company": "",
+            "location": "",
+            "salary_min": 0,
+            "salary_max": 0,
+            "tags": ["figma", "ux"],
+            "apply_url": "https://apply.workable.com/502",
+            "description": "Diseño de interfaces web y mobile.",
+        },
+    ]
+
+    scraper = RemoteOKScraper()
+    jobs = scraper.parse_jobs_json(fake_payload)
+    assert len(jobs) == 2
+
+    job1 = jobs[0]
+    assert job1.title == "Staff DevOps Engineer"
+    assert job1.company == "CloudNative LLC"
+    assert job1.location == "Anywhere"
+    assert job1.modality == "Remoto"
+    assert job1.salary == "$140,000 - $180,000 USD/año"
+    assert job1.source == "remoteok"
+    assert "Tags: kubernetes, aws, terraform" in job1.description
+
+    job2 = jobs[1]
+    assert job2.title == "UX UI Product Designer"
+    assert job2.company == "Confidencial"
+    assert job2.location == "Worldwide / Remoto"
+    assert job2.salary is None
+    assert job2.url == "https://apply.workable.com/502"
+
+
+def test_remoteok_search_mocked(monkeypatch):
+    scraper = RemoteOKScraper()
+    config = AppConfig()
+    categories = [
+        CategoryDefinition(
+            label="Desarrollo de software",
+            search_terms=["developer"],
+            match_keywords=["developer"],
+            exclude_keywords=[],
+        )
+    ]
+
+    fake_json = [
+        {"legal": "meta"},
+        {
+            "id": 999,
+            "position": "Senior Go Developer",
+            "company": "GoCorp",
+            "url": "https://remoteok.com/job/999",
+            "description": "Golang microservices.",
+        },
+    ]
+
+    class FakeResponse:
+        status_code = 200
+
+        def json(self):
+            return fake_json
+
+    mock_client = MagicMock()
+    mock_client.get.return_value = FakeResponse()
+    mock_client.__enter__.return_value = mock_client
+    mock_client.__exit__.return_value = None
+
+    monkeypatch.setattr("httpx.Client", lambda **kwargs: mock_client)
+
+    results = scraper.search(categories, config, max_pages=1)
+    assert len(results) == 1
+    assert results[0].title == "Senior Go Developer"
+    assert results[0].source == "remoteok"
+    assert results[0].modality == "Remoto"
+
 
