@@ -248,25 +248,51 @@ def test_seniority_detection_gob_payload():
 
 def test_filter_jobs_by_seniority_strict():
     job_sr = Job(title="Dev SR", seniority="Senior", url="https://example.com/1", source="test")
+    job_ssr = Job(title="Dev SSR", seniority="Semi Senior", url="https://example.com/ssr", source="test")
     job_jr = Job(title="Dev JR", seniority="Junior", url="https://example.com/2", source="test")
+    job_tr = Job(title="Dev TR", seniority="Trainee", url="https://example.com/tr", source="test")
     job_nd = Job(title="Dev ND", seniority="N/D", url="https://example.com/3", source="test")
 
-    jobs = [job_sr, job_jr, job_nd]
+    jobs = [job_sr, job_ssr, job_jr, job_tr, job_nd]
 
-    # Filtro estricto por Senior (excluye Junior y N/D)
+    # Filtro estricto por Senior y alias con paréntesis
     res_sr = filter_jobs(jobs, FilterOptions(seniority="sr"))
     assert len(res_sr) == 1
     assert res_sr[0].title == "Dev SR"
 
-    # Filtro estricto por Junior (excluye Senior y N/D)
+    res_sr_paren = filter_jobs(jobs, FilterOptions(seniority="Senior (SR)"))
+    assert len(res_sr_paren) == 1
+    assert res_sr_paren[0].title == "Dev SR"
+
+    # Filtro por Semi Senior (SSR)
+    res_ssr = filter_jobs(jobs, FilterOptions(seniority="Semi Senior (SSR)"))
+    assert len(res_ssr) == 1
+    assert res_ssr[0].title == "Dev SSR"
+
+    # Filtro por Trainee / Entry
+    res_tr = filter_jobs(jobs, FilterOptions(seniority="Trainee / Entry"))
+    assert len(res_tr) == 1
+    assert res_tr[0].title == "Dev TR"
+
+    # Filtro estricto por Junior
     res_jr = filter_jobs(jobs, FilterOptions(seniority="junior"))
     assert len(res_jr) == 1
     assert res_jr[0].title == "Dev JR"
 
     # Filtro 'todos' incluye todas
     res_todos = filter_jobs(jobs, FilterOptions(seniority="todos"))
-    assert len(res_todos) == 3
+    assert len(res_todos) == 5
+
+    # Filtro múltiple mediante lista (ej: checkbox interactivo)
+    res_list = filter_jobs(jobs, FilterOptions(seniority=["junior", "semi senior"]))
+    assert len(res_list) == 2
+    assert {j.title for j in res_list} == {"Dev JR", "Dev SSR"}
+
+    # Filtro múltiple mediante string separado por comas
+    res_str_multi = filter_jobs(jobs, FilterOptions(seniority="junior, ssr"))
+    assert len(res_str_multi) == 2
+    assert {j.title for j in res_str_multi} == {"Dev JR", "Dev SSR"}
 
     # Sin filtro de seniority incluye todas
     res_none = filter_jobs(jobs, FilterOptions())
-    assert len(res_none) == 3
+    assert len(res_none) == 5

@@ -46,6 +46,8 @@ def test_filter_options_defaults():
     assert opts.only_ai is False
     assert opts.only_freelance is False
     assert opts.only_remoto is False
+    assert opts.export_format == "both"
+    assert opts.filename is None
 
 
 def test_run_stats_initialization():

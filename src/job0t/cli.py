@@ -1,6 +1,8 @@
+import os
 import sys
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 import questionary
 from rich.console import Console
 from rich.panel import Panel
@@ -27,42 +29,148 @@ app = typer.Typer(
 console = Console()
 
 
+def _clear_terminal() -> None:
+    """Limpia la terminal completamente (pantalla + historial de scrollback)."""
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
+    # Secuencia ANSI para limpiar scrollback buffer (\033[3J), mover a inicio (\033[H) y limpiar pantalla (\033[2J)
+    sys.stdout.write("\033[3J\033[H\033[2J")
+    sys.stdout.flush()
+
+
 def _prompt_interactive_categories() -> List[str]:
-    """Muestra un menú interactivo con casillas de verificación para elegir categorías."""
-    categories_cfg = load_categories_config()
+    """Muestra un menú interactivo con casillas de verificación para elegir categorías organizadas en cajas."""
     choices = [
-        questionary.Choice(title=f"{v.label} ({k})", value=k)
-        for k, v in categories_cfg.items()
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DESARROLLO DE SOFTWARE                                │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Desarrollo (Cualquier especialidad)", value="desarrollo"),
+        questionary.Choice(title="Desarrollo Frontend", value="desarrollo_frontend"),
+        questionary.Choice(title="Desarrollo Backend", value="desarrollo_backend"),
+        questionary.Choice(title="Desarrollo Fullstack", value="desarrollo_fullstack"),
+        questionary.Choice(title="Desarrollo Mobile (iOS / Android)", value="desarrollo_mobile"),
+        questionary.Choice(title="Desarrollo de Videojuegos", value="desarrollo_gamedev"),
+        questionary.Choice(title="Desarrollo Desktop", value="desarrollo_desktop"),
+        questionary.Choice(title="Inteligencia Artificial & ML", value="desarrollo_ai"),
+        questionary.Choice(title="Ciberseguridad & AppSec", value="desarrollo_ciberseguridad"),
+        questionary.Choice(title="Web3 & Blockchain", value="desarrollo_web3"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DISEÑO                                                │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Diseño (Cualquier especialidad)", value="diseno"),
+        questionary.Choice(title="Diseño UX / UI", value="diseno_ux_ui"),
+        questionary.Choice(title="Diseño de Producto Digital", value="diseno_product"),
+        questionary.Choice(title="Diseño UX Research & Content", value="diseno_ux_research"),
+        questionary.Choice(title="Diseño Gráfico & Branding", value="diseno_grafico"),
+        questionary.Choice(title="Diseño Web & No-Code", value="diseno_web_nocode"),
+        questionary.Choice(title="Diseño Motion & Animación", value="diseno_motion"),
+        questionary.Choice(title="Modelado 3D & Renders", value="diseno_3d"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  DATOS & ANALÍTICA                                     │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Data (Cualquier especialidad)", value="data"),
+        questionary.Choice(title="Data Analytics & BI", value="data_analytics"),
+        questionary.Choice(title="Data Engineering", value="data_engineering"),
+        questionary.Choice(title="Data Science & Modelos", value="data_science"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  QA & TESTING                                          │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo QA & Testing", value="qa"),
+        questionary.Choice(title="QA Automation", value="qa_automation"),
+        questionary.Choice(title="QA Manual", value="qa_manual"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  CLOUD, DEVOPS & INFRAESTRUCTURA                       │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Cloud & DevOps", value="devops"),
+        questionary.Choice(title="DevOps & SRE", value="devops_sre"),
+        questionary.Choice(title="Cloud Engineering", value="cloud_engineering"),
+        questionary.Choice(title="Administración de Sistemas", value="sysadmin"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  PRODUCTO, GESTIÓN & LIDERAZGO                         │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Product Management", value="producto_management"),
+        questionary.Choice(title="Project Management & Agile", value="producto_agile"),
+        questionary.Choice(title="Tech Lead & Liderazgo", value="tech_lead"),
+
+        questionary.Separator(" "),
+        questionary.Separator("┌────────────────────────────────────────────────────────┐"),
+        questionary.Separator("│  SOPORTE & OPERACIONES IT                              │"),
+        questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Soporte IT & Mesa de Ayuda", value="soporte"),
     ]
 
-    console.print("[bold cyan]Selector Interactivo de Categorías[/bold cyan]")
+    console.print("\n[bold cyan]Selector de Categorías & Especialidades[/bold cyan]")
     selected = questionary.checkbox(
-        "Seleccioná una o varias categorías (Espacio para marcar, Enter para confirmar):",
+        "Seleccioná las áreas de tu interés (Espacio para marcar, Enter para confirmar):",
         choices=choices,
     ).ask()
 
     return selected or []
 
 
-def _prompt_interactive_seniority() -> Optional[str]:
-    """Muestra un menú interactivo para elegir el nivel de seniority deseado."""
+def _prompt_interactive_seniority() -> List[str]:
+    """Muestra un menú interactivo con casillas de verificación para elegir uno o varios seniorities."""
     choices = [
-        "(Recomendado) Todos / No filtrar",
-        "Junior",
-        "Semi Senior (SSR)",
-        "Senior (SR)",
-        "Trainee / Entry",
+        questionary.Choice(title="Trainee / Entry", value="trainee"),
+        questionary.Choice(title="Junior", value="junior"),
+        questionary.Choice(title="Semi Senior (SSR)", value="semi senior"),
+        questionary.Choice(title="Senior (SR)", value="senior"),
     ]
     console.print("\n[bold cyan]Selector de Seniority[/bold cyan]")
-    choice = questionary.select(
-        "Seleccioná el seniority deseado:",
+    selected = questionary.checkbox(
+        "Seleccioná los niveles deseados (Espacio para marcar, Enter para confirmar. Si no marcás ninguno, busca todos):",
         choices=choices,
-        default="(Recomendado) Todos / No filtrar",
     ).ask()
 
-    if not choice or choice.startswith("(Recomendado)"):
-        return None
-    return choice
+    return selected or []
+
+
+def _prompt_interactive_format() -> str:
+    """Muestra un menú interactivo con casillas de verificación para elegir el formato de descarga."""
+    choices = [
+        questionary.Choice(title="Excel (.xlsx)", value="xlsx"),
+        questionary.Choice(title="CSV (.csv)", value="csv"),
+    ]
+    console.print("\n[bold cyan]Formato de Descarga[/bold cyan]")
+    selected = questionary.checkbox(
+        "Seleccioná el/los formatos que querés descargar (Espacio para marcar, Enter para confirmar):",
+        choices=choices,
+    ).ask()
+
+    if not selected:
+        console.print("[dim]No marcaste ninguno: se exportarán ambos formatos (.xlsx y .csv)[/dim]")
+        return "both"
+    if "xlsx" in selected and "csv" in selected:
+        return "both"
+    if "xlsx" in selected:
+        return "xlsx"
+    if "csv" in selected:
+        return "csv"
+    return "both"
+
+
+def _prompt_interactive_filename() -> str:
+    """Solicita el nombre del archivo de reporte (con fecha YYYY-MM-DD por defecto)."""
+    default_name = f"jobs_{datetime.now().strftime('%Y-%m-%d')}"
+    console.print("\n[bold cyan]Nombre del Archivo[/bold cyan]")
+    name = questionary.text(
+        f"Ingresá el nombre base del archivo (sin extensión, ENTER para '{default_name}'):",
+        default=default_name,
+    ).ask()
+
+    return name.strip() if name and name.strip() else default_name
 
 
 JOB0T_LOGO = r"""
@@ -99,6 +207,18 @@ def run(
         "-s",
         help="Filtrar por seniority: trainee, junior, ssr, sr (o 'todos'). Si se omite en modo interactivo, se preguntará.",
     ),
+    export_format: Optional[str] = typer.Option(
+        None,
+        "--format",
+        "-F",
+        help="Formato de exportación: 'xlsx', 'csv' o 'both'. Si se omite en modo interactivo, se preguntará.",
+    ),
+    filename: Optional[str] = typer.Option(
+        None,
+        "--filename",
+        "-n",
+        help="Nombre base del archivo de salida sin extensión (ej: 'jobs_2026-10-04'). Por defecto usa la fecha actual.",
+    ),
     ai_friendly: bool = typer.Option(
         False,
         "--ai-friendly",
@@ -131,7 +251,7 @@ def run(
     ),
 ):
     """Ejecuta la búsqueda, clasificación y exportación de ofertas laborales."""
-    console.clear()
+    _clear_terminal()
     console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
     console.print(
         Panel(
@@ -158,7 +278,36 @@ def run(
     if is_interactive and selected_seniority is None:
         selected_seniority = _prompt_interactive_seniority()
 
-    console.print(f"[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
+    # 3. Determinar formato de exportación
+    selected_format = export_format
+    if is_interactive and selected_format is None:
+        selected_format = _prompt_interactive_format()
+    elif not selected_format:
+        selected_format = "both"
+
+    # 4. Determinar nombre de archivo
+    selected_filename = filename
+    if is_interactive and selected_filename is None:
+        selected_filename = _prompt_interactive_filename()
+
+    console.print(f"\n[bold]Categorías activas:[/bold] {', '.join(selected_categories)}")
+    if selected_seniority:
+        if isinstance(selected_seniority, list):
+            if selected_seniority:
+                sen_str = ", ".join(s.title() for s in selected_seniority)
+                console.print(f"[bold]Seniority activo:[/bold] [blue]{sen_str}[/blue]")
+            else:
+                console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+        elif selected_seniority.lower() not in ("todos", "all", "none", "no"):
+            console.print(f"[bold]Seniority activo:[/bold] [blue]{selected_seniority.title()}[/blue]")
+        else:
+            console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+    else:
+        console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+
+    console.print(f"[bold]Formato de descarga:[/bold] [green]{selected_format.upper()}[/green]")
+    if selected_filename:
+        console.print(f"[bold]Nombre de archivo:[/bold] [cyan]{selected_filename}[/cyan]")
 
     filter_flags_msg = []
     if ai_friendly:
@@ -167,11 +316,9 @@ def run(
         filter_flags_msg.append("[cyan]Freelance[/cyan]")
     if remoto:
         filter_flags_msg.append("[magenta]Remoto[/magenta]")
-    if selected_seniority and selected_seniority.lower() not in ("todos", "all", "none", "no"):
-        filter_flags_msg.append(f"[blue]Seniority: {selected_seniority}[/blue]")
 
     if filter_flags_msg:
-        console.print(f"[bold]Filtros aplicados:[/bold] {' + '.join(filter_flags_msg)}")
+        console.print(f"[bold]Banderas activas:[/bold] {' + '.join(filter_flags_msg)}")
 
     options = FilterOptions(
         categories=selected_categories,
@@ -179,16 +326,18 @@ def run(
         only_freelance=freelance,
         only_remoto=remoto,
         seniority=selected_seniority,
+        export_format=selected_format,
+        filename=selected_filename,
         max_pages=max_pages,
         output_dir=output_dir,
     )
 
-    # 3. Ejecutar Runner con indicador de progreso
+    # 5. Ejecutar Runner con indicador de progreso
     runner = PipelineRunner()
     with console.status("[bold green]Buscando y procesando ofertas laborales...", spinner="dots"):
         xlsx_path, csv_path, stats = runner.run(options)
 
-    # 4. Mostrar Resumen de Resultados
+    # 6. Mostrar Resumen de Resultados
     console.print("\n[bold green][OK] Búsqueda finalizada exitosamente[/bold green]\n")
 
     table = Table(title="Resumen de Ejecución", border_style="dim")
@@ -223,8 +372,95 @@ def run(
         console.print(sen_table)
 
     console.print("\n[bold]Reportes generados:[/bold]")
-    console.print(f"  [Excel] {xlsx_path.resolve()}")
-    console.print(f"  [CSV]   {csv_path.resolve()}\n")
+    if xlsx_path:
+        console.print(f"  [Excel] {xlsx_path.resolve()}")
+    if csv_path:
+        console.print(f"  [CSV]   {csv_path.resolve()}")
+    console.print()
+
+
+@app.command(name="update")
+def update(
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Fuerza la reinstalación y actualización incluso si el commit local coincide con el remoto.",
+    ),
+):
+    """Actualiza job0t a la versión más reciente publicada en GitHub."""
+    from job0t.updater import (
+        check_uncommitted_changes,
+        get_app_root,
+        get_current_git_branch,
+        get_local_commit_sha,
+        get_remote_commit_info,
+        update_via_git,
+        update_via_zip,
+    )
+
+    _clear_terminal()
+    console.print(f"[bold cyan]{JOB0T_LOGO}[/bold cyan]")
+    console.print(
+        Panel(
+            "[bold white]job0t updater[/bold white] — [green]Actualizador Automático[/green]\n"
+            "[dim]Sincronización directa con el repositorio oficial en GitHub[/dim]",
+            border_style="cyan",
+        )
+    )
+
+    app_root = get_app_root()
+    is_git_repo = (app_root / ".git").exists()
+    branch = get_current_git_branch(app_root) or "main"
+
+    console.print(f"[dim]Ruta de instalación:[/dim] {app_root}")
+    if is_git_repo:
+        console.print(f"[dim]Rama activa:[/dim] {branch}")
+
+    # 1. Chequear cambios locales sin commitear (si es repo git)
+    if is_git_repo and check_uncommitted_changes(app_root):
+        console.print(
+            "\n[bold yellow]Atención:[/bold yellow] Tenés cambios locales sin guardar en tu copia de trabajo.\n"
+            "Por favor hacé un commit o 'git stash' antes de ejecutar el actualizador para evitar conflictos."
+        )
+        raise typer.Exit(code=1)
+
+    # 2. Consultar último commit remoto
+    with console.status("[bold cyan]Consultando actualizaciones en GitHub...", spinner="dots"):
+        local_sha = get_local_commit_sha(app_root)
+        remote_sha, remote_msg, err = get_remote_commit_info(branch)
+
+    if err:
+        console.print(f"\n[bold red]No se pudo verificar la actualización:[/bold red] {err}")
+        if not force:
+            raise typer.Exit(code=1)
+
+    if local_sha and remote_sha and local_sha == remote_sha and not force:
+        console.print("\n[bold green][OK] job0t ya se encuentra en la versión más reciente.[/bold green]")
+        console.print(f"Commit actual: [cyan]{local_sha[:7]}[/cyan] ({remote_msg})\n")
+        return
+
+    # 3. Mostrar información del nuevo commit a instalar
+    if remote_sha:
+        console.print(f"\n[bold green]Nueva versión encontrada:[/bold green] [cyan]{remote_sha[:7]}[/cyan]")
+        if remote_msg:
+            console.print(f"[dim]Mensaje:[/dim] {remote_msg}")
+
+    # 4. Ejecutar actualización
+    with console.status("[bold green]Descargando actualización y actualizando dependencias...", spinner="dots"):
+        if is_git_repo:
+            success, msg = update_via_git(app_root, branch)
+        else:
+            success, msg = update_via_zip(app_root, target_sha=remote_sha)
+
+    if success:
+        console.print("\n[bold green][OK] ¡job0t se actualizó exitosamente![/bold green]")
+        if remote_sha:
+            console.print(f"Versión activa: [cyan]{remote_sha[:7]}[/cyan]")
+        console.print("\nYa podés continuar usando [bold cyan]job0t run[/bold cyan].\n")
+    else:
+        console.print(f"\n[bold red]Ocurrió un error al actualizar:[/bold red] {msg}\n")
+        raise typer.Exit(code=1)
 
 
 def main():

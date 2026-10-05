@@ -1,47 +1,413 @@
+# ==============================================================================
+# 🤖 job0t — Catálogo Extendido de Categorías & Especialidades
+# Cada categoría define sus términos de búsqueda en portales, keywords de
+# ponderación para clasificación automática y palabras de exclusión quirúrgica.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 💻 DESARROLLO DE SOFTWARE
+# ------------------------------------------------------------------------------
+
 desarrollo:
   label: "Desarrollo de software"
   search_terms:
     - "desarrollador"
     - "developer"
     - "programador"
+    - "software engineer"
   match_keywords:
+    - "software"
+    - "desarrollo"
+    - "programacion"
     - "backend"
     - "frontend"
     - "fullstack"
-    - ".net"
     - "python"
-    - "software engineer"
-    - "react"
-    - "node"
+    - "javascript"
+    - "typescript"
     - "java"
-    - "golang"
     - "c#"
+    - ".net"
+    - "golang"
+    - "php"
+    - "ruby"
   exclude_keywords:
     - "vendedor"
     - "comercial"
     - "inmobiliario"
 
+desarrollo_frontend:
+  label: "Desarrollo Frontend"
+  search_terms:
+    - "frontend"
+    - "front end"
+    - "desarrollador frontend"
+    - "frontend developer"
+  match_keywords:
+    - "frontend"
+    - "front-end"
+    - "front end"
+    - "react"
+    - "vue"
+    - "angular"
+    - "next.js"
+    - "svelte"
+    - "html"
+    - "css"
+    - "tailwind"
+    - "web developer"
+  exclude_keywords:
+    - "vendedor"
+    - "comercial"
+
+desarrollo_backend:
+  label: "Desarrollo Backend"
+  search_terms:
+    - "backend"
+    - "back end"
+    - "desarrollador backend"
+    - "backend developer"
+  match_keywords:
+    - "backend"
+    - "back-end"
+    - "back end"
+    - "python"
+    - "node"
+    - "express"
+    - "django"
+    - "fastapi"
+    - "java"
+    - "spring"
+    - ".net"
+    - "c#"
+    - "golang"
+    - "go"
+    - "php"
+    - "laravel"
+    - "sql"
+    - "api rest"
+    - "microservicios"
+  exclude_keywords:
+    - "vendedor"
+    - "comercial"
+
+desarrollo_fullstack:
+  label: "Desarrollo Fullstack"
+  search_terms:
+    - "fullstack"
+    - "full stack"
+    - "desarrollador fullstack"
+  match_keywords:
+    - "fullstack"
+    - "full-stack"
+    - "full stack"
+    - "mern"
+    - "mean"
+  exclude_keywords:
+    - "vendedor"
+    - "comercial"
+
+desarrollo_mobile:
+  label: "Desarrollo Mobile"
+  search_terms:
+    - "mobile developer"
+    - "desarrollador mobile"
+    - "android developer"
+    - "ios developer"
+    - "flutter"
+    - "react native"
+  match_keywords:
+    - "mobile"
+    - "movil"
+    - "android"
+    - "ios"
+    - "swift"
+    - "kotlin"
+    - "react native"
+    - "flutter"
+    - "xcode"
+  exclude_keywords:
+    - "vendedor"
+    - "telefonia"
+
+desarrollo_gamedev:
+  label: "Desarrollo de Videojuegos"
+  search_terms:
+    - "game developer"
+    - "desarrollador videojuegos"
+    - "unity developer"
+    - "unreal engine"
+  match_keywords:
+    - "game dev"
+    - "videojuegos"
+    - "unity"
+    - "unreal engine"
+    - "godot"
+    - "gameplay"
+    - "shaders"
+  exclude_keywords:
+    - "vendedor"
+    - "casino presencial"
+
+desarrollo_desktop:
+  label: "Desarrollo Desktop"
+  search_terms:
+    - "desktop developer"
+    - "aplicaciones de escritorio"
+    - "c++ developer"
+  match_keywords:
+    - "desktop"
+    - "escritorio"
+    - "electron"
+    - "tauri"
+    - "c++"
+    - "qt"
+    - "wpf"
+    - "winforms"
+  exclude_keywords:
+    - "soporte tecnico presencial"
+
+desarrollo_ai:
+  label: "Inteligencia Artificial & ML"
+  search_terms:
+    - "ai engineer"
+    - "machine learning engineer"
+    - "ingeniero inteligencia artificial"
+    - "nlp engineer"
+  match_keywords:
+    - "machine learning"
+    - "deep learning"
+    - "inteligencia artificial"
+    - "llm"
+    - "nlp"
+    - "computer vision"
+    - "pytorch"
+    - "tensorflow"
+    - "langchain"
+    - "rag"
+    - "huggingface"
+  exclude_keywords:
+    - "vendedor"
+
+desarrollo_ciberseguridad:
+  label: "Ciberseguridad & AppSec"
+  search_terms:
+    - "ciberseguridad"
+    - "seguridad informatica"
+    - "cybersecurity"
+    - "pentester"
+    - "soc analyst"
+  match_keywords:
+    - "seguridad de la informacion"
+    - "ciberseguridad"
+    - "appsec"
+    - "ethical hacking"
+    - "pentesting"
+    - "siem"
+    - "soc"
+    - "owasp"
+  exclude_keywords:
+    - "guardia"
+    - "vigilador"
+    - "seguridad fisica"
+
+desarrollo_web3:
+  label: "Web3 & Blockchain"
+  search_terms:
+    - "blockchain developer"
+    - "smart contracts"
+    - "solidity"
+    - "web3 developer"
+  match_keywords:
+    - "blockchain"
+    - "smart contract"
+    - "solidity"
+    - "ethereum"
+    - "rust"
+    - "web3"
+    - "defi"
+  exclude_keywords:
+    - "trader"
+    - "vendedor de crypto"
+
+# ------------------------------------------------------------------------------
+# 🎨 DISEÑO
+# ------------------------------------------------------------------------------
+
 diseno:
   label: "Diseño"
   search_terms:
     - "diseñador"
+    - "designer"
+    - "diseño"
+  match_keywords:
+    - "diseño"
+    - "designer"
+    - "figma"
+    - "adobe"
     - "ux"
     - "ui"
-  match_keywords:
-    - "figma"
-    - "diseño gráfico"
-    - "product designer"
-    - "ui designer"
-    - "ux designer"
   exclude_keywords:
     - "diseño de interiores"
     - "arquitectura de interiores"
+    - "autocad"
+    - "planos"
+
+diseno_ux_ui:
+  label: "Diseño UX / UI"
+  search_terms:
+    - "ux designer"
+    - "ui designer"
+    - "ux ui designer"
+    - "diseñador ux"
+    - "diseñador ui"
+    - "diseñador ux ui"
+  match_keywords:
+    - "ux"
+    - "ui"
+    - "ux/ui"
+    - "ui/ux"
+    - "user experience"
+    - "user interface"
+    - "experiencia de usuario"
+    - "interfaz de usuario"
+    - "figma"
+    - "wireframes"
+    - "prototipado"
+    - "design system"
+    - "sistemas de diseño"
+  exclude_keywords:
+    - "planos"
+    - "autocad"
+    - "arquitectura"
+    - "indumentaria"
+    - "textil"
+    - "moda"
+    - "imprenta"
+    - "cmyk"
+    - "industrial"
+    - "diseño grafico publicitario"
+
+diseno_product:
+  label: "Diseño de Producto Digital"
+  search_terms:
+    - "product designer"
+    - "diseñador de producto"
+    - "digital product designer"
+  match_keywords:
+    - "product design"
+    - "product designer"
+    - "diseño de producto"
+    - "figma"
+    - "design system"
+    - "product discovery"
+  exclude_keywords:
+    - "producto quimico"
+    - "industrial manufactura"
+    - "planos"
+
+diseno_ux_research:
+  label: "Diseño UX Research & Content"
+  search_terms:
+    - "ux researcher"
+    - "investigador ux"
+    - "ux writer"
+    - "content designer"
+  match_keywords:
+    - "ux research"
+    - "investigacion de usuarios"
+    - "pruebas de usabilidad"
+    - "ux writing"
+    - "content design"
+    - "redaccion ux"
+  exclude_keywords:
+    - "investigador clinico"
+    - "periodista de investigacion"
+
+diseno_grafico:
+  label: "Diseño Gráfico & Branding"
+  search_terms:
+    - "diseñador grafico"
+    - "graphic designer"
+    - "diseño visual"
+    - "branding designer"
+  match_keywords:
+    - "diseño grafico"
+    - "graphic design"
+    - "branding"
+    - "identidad visual"
+    - "photoshop"
+    - "illustrator"
+    - "logotipos"
+    - "piezas graficas"
+  exclude_keywords:
+    - "planos"
+    - "autocad"
+    - "arquitectura"
+
+diseno_web_nocode:
+  label: "Diseño Web & No-Code"
+  search_terms:
+    - "diseñador web"
+    - "web designer"
+    - "webflow"
+    - "wordpress designer"
+  match_keywords:
+    - "diseño web"
+    - "web designer"
+    - "webflow"
+    - "framer"
+    - "wordpress"
+    - "elementor"
+  exclude_keywords:
+    - "planos"
+    - "indumentaria"
+
+diseno_motion:
+  label: "Diseño Motion & Animación"
+  search_terms:
+    - "motion designer"
+    - "motion graphics"
+    - "animador 2d"
+    - "animador 3d"
+  match_keywords:
+    - "motion graphics"
+    - "motion design"
+    - "after effects"
+    - "animacion"
+    - "lottie"
+  exclude_keywords:
+    - "animador infantil"
+    - "animador de eventos"
+
+diseno_3d:
+  label: "Modelado 3D & Renders"
+  search_terms:
+    - "3d artist"
+    - "artista 3d"
+    - "modelador 3d"
+    - "blender"
+  match_keywords:
+    - "modelado 3d"
+    - "blender"
+    - "cinema 4d"
+    - "maya"
+    - "renders"
+    - "texturizado"
+  exclude_keywords:
+    - "construccion civil"
+
+# ------------------------------------------------------------------------------
+# 📊 DATOS & ANALÍTICA
+# ------------------------------------------------------------------------------
 
 data:
   label: "Data / Análisis"
   search_terms:
     - "data analyst"
     - "analista de datos"
+    - "data engineer"
+    - "data scientist"
   match_keywords:
     - "sql"
     - "power bi"
@@ -51,11 +417,67 @@ data:
     - "data science"
   exclude_keywords: []
 
+data_analytics:
+  label: "Data Analytics & BI"
+  search_terms:
+    - "analista bi"
+    - "business intelligence"
+    - "power bi analyst"
+    - "tableau analyst"
+  match_keywords:
+    - "business intelligence"
+    - "power bi"
+    - "tableau"
+    - "sql"
+    - "dashboards"
+    - "kpis"
+    - "dax"
+  exclude_keywords: []
+
+data_engineering:
+  label: "Data Engineering"
+  search_terms:
+    - "data engineer"
+    - "ingeniero de datos"
+    - "etl developer"
+    - "big data"
+  match_keywords:
+    - "data engineering"
+    - "pipeline de datos"
+    - "etl"
+    - "spark"
+    - "hadoop"
+    - "snowflake"
+    - "dbt"
+    - "airflow"
+    - "databricks"
+  exclude_keywords: []
+
+data_science:
+  label: "Data Science & Modelos"
+  search_terms:
+    - "data scientist"
+    - "cientifico de datos"
+    - "machine learning data"
+  match_keywords:
+    - "data science"
+    - "modelos predictivos"
+    - "estadistica"
+    - "pandas"
+    - "scikit-learn"
+    - "python data"
+  exclude_keywords: []
+
+# ------------------------------------------------------------------------------
+# 🧪 QA & TESTING
+# ------------------------------------------------------------------------------
+
 qa:
   label: "QA / Testing"
   search_terms:
     - "qa"
     - "tester"
+    - "quality assurance"
   match_keywords:
     - "automatización de pruebas"
     - "qa automation"
@@ -63,6 +485,41 @@ qa:
     - "cypress"
     - "selenium"
   exclude_keywords: []
+
+qa_automation:
+  label: "QA Automation"
+  search_terms:
+    - "qa automation"
+    - "automation tester"
+    - "sdet"
+  match_keywords:
+    - "qa automation"
+    - "selenium"
+    - "cypress"
+    - "playwright"
+    - "appium"
+    - "postman"
+    - "automatizacion"
+  exclude_keywords: []
+
+qa_manual:
+  label: "QA Manual"
+  search_terms:
+    - "qa manual"
+    - "tester manual"
+    - "analista qa"
+  match_keywords:
+    - "qa manual"
+    - "casos de prueba"
+    - "test cases"
+    - "pruebas funcionales"
+    - "jira"
+    - "bug tracking"
+  exclude_keywords: []
+
+# ------------------------------------------------------------------------------
+# ☁️ CLOUD, DEVOPS & INFRAESTRUCTURA
+# ------------------------------------------------------------------------------
 
 devops:
   label: "DevOps / Cloud"
@@ -79,6 +536,117 @@ devops:
     - "ci/cd"
   exclude_keywords: []
 
+devops_sre:
+  label: "DevOps & SRE"
+  search_terms:
+    - "devops engineer"
+    - "sre"
+    - "site reliability engineer"
+  match_keywords:
+    - "devops"
+    - "sre"
+    - "ci/cd"
+    - "docker"
+    - "kubernetes"
+    - "terraform"
+    - "ansible"
+    - "monitoring"
+  exclude_keywords: []
+
+cloud_engineering:
+  label: "Cloud Engineering"
+  search_terms:
+    - "cloud engineer"
+    - "ingeniero cloud"
+    - "aws engineer"
+    - "azure engineer"
+  match_keywords:
+    - "cloud"
+    - "aws"
+    - "azure"
+    - "gcp"
+    - "google cloud"
+    - "cloud architecture"
+  exclude_keywords: []
+
+sysadmin:
+  label: "Administración de Sistemas"
+  search_terms:
+    - "sysadmin"
+    - "administrador de sistemas"
+    - "administrador de servidores"
+  match_keywords:
+    - "sysadmin"
+    - "linux"
+    - "windows server"
+    - "active directory"
+    - "redes"
+    - "vmware"
+  exclude_keywords: []
+
+# ------------------------------------------------------------------------------
+# 🚀 PRODUCTO, GESTIÓN & LIDERAZGO
+# ------------------------------------------------------------------------------
+
+producto:
+  label: "Producto / Gestión"
+  search_terms:
+    - "product manager"
+    - "project manager"
+  match_keywords:
+    - "scrum master"
+    - "product owner"
+  exclude_keywords: []
+
+producto_management:
+  label: "Product Management"
+  search_terms:
+    - "product manager"
+    - "product owner"
+    - "gerente de producto"
+  match_keywords:
+    - "product manager"
+    - "product owner"
+    - "roadmap"
+    - "backlog"
+    - "user stories"
+    - "kpis de producto"
+  exclude_keywords: []
+
+producto_agile:
+  label: "Project Management & Agile"
+  search_terms:
+    - "project manager"
+    - "scrum master"
+    - "agile coach"
+  match_keywords:
+    - "project manager"
+    - "scrum master"
+    - "agile"
+    - "kanban"
+    - "gestion de proyectos"
+    - "pmp"
+  exclude_keywords: []
+
+tech_lead:
+  label: "Tech Lead & Liderazgo"
+  search_terms:
+    - "tech lead"
+    - "lider tecnico"
+    - "engineering manager"
+    - "architect"
+  match_keywords:
+    - "tech lead"
+    - "lider tecnico"
+    - "engineering manager"
+    - "arquitecto de software"
+    - "liderazgo tecnico"
+  exclude_keywords: []
+
+# ------------------------------------------------------------------------------
+# 🛠️ SOPORTE & OPERACIONES IT
+# ------------------------------------------------------------------------------
+
 soporte:
   label: "Soporte IT"
   search_terms:
@@ -89,29 +657,5 @@ soporte:
     - "soporte nivel 1"
     - "soporte nivel 2"
     - "mesas de ayuda"
-  exclude_keywords: []
-
-producto:
-  label: "Producto / Gestión"
-  search_terms:
-    - "product manager"
-    - "project manager"
-  match_keywords:
-    - "scrum master"
-    - "product owner"
-    - "analista funcional"
-    - "agile coach"
-  exclude_keywords: []
-
-marketing:
-  label: "Marketing digital"
-  search_terms:
-    - "marketing digital"
-    - "community manager"
-  match_keywords:
-    - "seo"
-    - "sem"
-    - "growth"
-    - "copywriter"
-    - "google ads"
+    - "mesa de ayuda"
   exclude_keywords: []
