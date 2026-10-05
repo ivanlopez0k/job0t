@@ -12,6 +12,7 @@ import typer
 from job0t.config import load_categories_config
 from job0t.models import FilterOptions
 from job0t.pipeline.runner import PipelineRunner
+from job0t.ui.prompts import CATEGORY_HIERARCHY, hierarchical_checkbox
 
 # Forzar UTF-8 en Windows para evitar UnicodeEncodeError con cp1252
 if sys.platform == "win32":
@@ -100,6 +101,7 @@ def _prompt_interactive_categories() -> List[str]:
         questionary.Separator("┌────────────────────────────────────────────────────────┐"),
         questionary.Separator("│  PRODUCTO, GESTIÓN & LIDERAZGO                         │"),
         questionary.Separator("└────────────────────────────────────────────────────────┘"),
+        questionary.Choice(title="Todo Producto (Cualquier especialidad)", value="producto"),
         questionary.Choice(title="Product Management", value="producto_management"),
         questionary.Choice(title="Project Management & Agile", value="producto_agile"),
         questionary.Choice(title="Tech Lead & Liderazgo", value="tech_lead"),
@@ -112,9 +114,10 @@ def _prompt_interactive_categories() -> List[str]:
     ]
 
     console.print("\n[bold cyan]Selector de Categorías & Especialidades[/bold cyan]")
-    selected = questionary.checkbox(
+    selected = hierarchical_checkbox(
         "Seleccioná las áreas de tu interés (Espacio para marcar, Enter para confirmar):",
         choices=choices,
+        hierarchy=CATEGORY_HIERARCHY,
     ).ask()
 
     return selected or []
