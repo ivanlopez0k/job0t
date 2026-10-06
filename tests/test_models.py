@@ -46,6 +46,8 @@ def test_filter_options_defaults():
     assert opts.only_ai is False
     assert opts.only_freelance is False
     assert opts.only_remoto is False
+    assert opts.modalities == []
+    assert opts.location is None
     assert opts.export_format == "both"
     assert opts.filename is None
 
@@ -55,3 +57,4 @@ def test_run_stats_initialization():
     assert stats.total_raw == 10
     assert stats.total_unique == 8
     assert stats.total_filtered == 5
+    assert stats.modality_count == {}

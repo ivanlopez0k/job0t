@@ -140,6 +140,112 @@ def _prompt_interactive_seniority() -> List[str]:
     return selected or []
 
 
+def _prompt_interactive_modality() -> List[str]:
+    """Muestra un menú interactivo con casillas de verificación para elegir modalidades de trabajo."""
+    choices = [
+        questionary.Choice(title="Remoto (Home office / 100% online)", value="remoto"),
+        questionary.Choice(title="Híbrido (Días presenciales + home office)", value="hibrido"),
+        questionary.Choice(title="Presencial (En oficina / sede)", value="presencial"),
+    ]
+    console.print("\n[bold cyan]Selector de Modalidad[/bold cyan]")
+    selected = questionary.checkbox(
+        "Seleccioná las modalidades de tu interés (Espacio para marcar, Enter para confirmar. Si no marcás ninguna, busca todas):",
+        choices=choices,
+    ).ask()
+
+    return selected or []
+
+
+def _prompt_interactive_location(selected_modalities: List[str]) -> Optional[str]:
+    """Muestra un flujo inteligente para acotar la ubicación geográfica según la modalidad elegida."""
+    has_presencial_or_hybrid = any(m in ("presencial", "hibrido") for m in selected_modalities)
+    only_remoto = len(selected_modalities) == 1 and selected_modalities[0] == "remoto"
+
+    # Caso 1: Se eligió presencial o híbrido (con o sin remoto)
+    if has_presencial_or_hybrid:
+        console.print("\n[bold cyan]Selector de Ubicación Geográfica (Presencial / Híbrido)[/bold cyan]")
+        country_choices = [
+            questionary.Choice(title="[1] (Recomendado) Argentina", value="argentina"),
+            questionary.Choice(title="[2] Otro país", value="otro"),
+            questionary.Choice(title="[3] Cualquier país / Sin filtro de ubicación", value="todos"),
+        ]
+        country_resp = questionary.select(
+            "Seleccioná el país para las ofertas presenciales / híbridas:",
+            choices=country_choices,
+            default="argentina",
+        ).ask()
+
+        if country_resp == "argentina":
+            prov = questionary.text(
+                "Provincia o ciudad en Argentina (ej: Córdoba, Buenos Aires, Rosario. ENTER para todo el país):",
+                default="",
+            ).ask()
+            if prov and prov.strip():
+                return prov.strip()
+            return "argentina"
+        elif country_resp == "otro":
+            other_country = questionary.text(
+                "Ingresá el país deseado (ej: Chile, Uruguay, España, México):",
+                default="",
+            ).ask()
+            return other_country.strip() if other_country and other_country.strip() else None
+        else:
+            return None
+
+    # Caso 2: Se eligió exclusivamente Remoto
+    if only_remoto:
+        console.print("\n[bold cyan]Selector de Ubicación para Ofertas Remotas[/bold cyan]")
+        remote_scope_choices = [
+            questionary.Choice(
+                title="[1] (Recomendado) Remoto Global / Cualquier lugar (incluye vacantes en USD y Worldwide)",
+                value="global",
+            ),
+            questionary.Choice(
+                title="[2] Acotar a país o región específica (ej: Argentina, LatAm, etc.)",
+                value="custom",
+            ),
+        ]
+        scope_resp = questionary.select(
+            "¿Cómo querés filtrar la ubicación de las ofertas remotas?:",
+            choices=remote_scope_choices,
+            default="global",
+        ).ask()
+
+        if scope_resp == "custom":
+            target = questionary.text(
+                "Ingresá el país o región (ej: Argentina, LatAm, Chile):",
+                default="Argentina",
+            ).ask()
+            return target.strip() if target and target.strip() else None
+        return None
+
+    # Caso 3: Sin filtro de modalidad (o las tres marcadas)
+    console.print("\n[bold cyan]Selector de Ubicación Geográfica[/bold cyan]")
+    general_choices = [
+        questionary.Choice(
+            title="[1] (Recomendado) Cualquier ubicación / Sin filtro",
+            value="global",
+        ),
+        questionary.Choice(
+            title="[2] Acotar por país o ciudad (ej: Argentina, Córdoba, Chile)",
+            value="custom",
+        ),
+    ]
+    gen_resp = questionary.select(
+        "¿Deseás filtrar por alguna ubicación geográfica?:",
+        choices=general_choices,
+        default="global",
+    ).ask()
+
+    if gen_resp == "custom":
+        target = questionary.text(
+            "Ingresá la ubicación, país o ciudad (ej: Córdoba, Argentina, México):",
+            default="Argentina",
+        ).ask()
+        return target.strip() if target and target.strip() else None
+    return None
+
+
 def _prompt_interactive_format() -> str:
     """Muestra un menú interactivo con casillas de verificación para elegir el formato de descarga."""
     choices = [
@@ -209,6 +315,18 @@ def run(
         "--seniority",
         "-s",
         help="Filtrar por seniority: trainee, junior, ssr, sr (o 'todos'). Si se omite en modo interactivo, se preguntará.",
+    ),
+    modality: Optional[str] = typer.Option(
+        None,
+        "--modality",
+        "-m",
+        help="Modalidades separadas por comas (remoto, hibrido, presencial). Si se omite en modo interactivo, se preguntará.",
+    ),
+    location: Optional[str] = typer.Option(
+        None,
+        "--location",
+        "-l",
+        help="Ubicación geográfica o país (ej: 'cordoba', 'argentina'). Si se omite en modo interactivo, se preguntará.",
     ),
     export_format: Optional[str] = typer.Option(
         None,
@@ -281,14 +399,26 @@ def run(
     if is_interactive and selected_seniority is None:
         selected_seniority = _prompt_interactive_seniority()
 
-    # 3. Determinar formato de exportación
+    # 3. Determinar modalidad seleccionada
+    selected_modalities: List[str] = []
+    if modality:
+        selected_modalities = [m.strip().lower() for m in modality.split(",") if m.strip()]
+    elif is_interactive:
+        selected_modalities = _prompt_interactive_modality()
+
+    # 4. Determinar ubicación seleccionada
+    selected_location = location
+    if is_interactive and selected_location is None:
+        selected_location = _prompt_interactive_location(selected_modalities)
+
+    # 5. Determinar formato de exportación
     selected_format = export_format
     if is_interactive and selected_format is None:
         selected_format = _prompt_interactive_format()
     elif not selected_format:
         selected_format = "both"
 
-    # 4. Determinar nombre de archivo
+    # 6. Determinar nombre de archivo
     selected_filename = filename
     if is_interactive and selected_filename is None:
         selected_filename = _prompt_interactive_filename()
@@ -307,6 +437,17 @@ def run(
             console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
     else:
         console.print("[bold]Seniority activo:[/bold] [dim]Todos / Sin filtro[/dim]")
+
+    if selected_modalities:
+        mod_str = ", ".join(m.title() for m in selected_modalities)
+        console.print(f"[bold]Modalidad activa:[/bold] [magenta]{mod_str}[/magenta]")
+    else:
+        console.print("[bold]Modalidad activa:[/bold] [dim]Todas / Sin filtro[/dim]")
+
+    if selected_location and selected_location.lower() not in ("todos", "all", "global", "sin filtro"):
+        console.print(f"[bold]Ubicación activa:[/bold] [yellow]{selected_location.title()}[/yellow]")
+    else:
+        console.print("[bold]Ubicación activa:[/bold] [dim]Todas / Global[/dim]")
 
     console.print(f"[bold]Formato de descarga:[/bold] [green]{selected_format.upper()}[/green]")
     if selected_filename:
@@ -328,6 +469,8 @@ def run(
         only_ai=ai_friendly,
         only_freelance=freelance,
         only_remoto=remoto,
+        modalities=selected_modalities,
+        location=selected_location,
         seniority=selected_seniority,
         export_format=selected_format,
         filename=selected_filename,
@@ -364,6 +507,15 @@ def run(
         for src, cnt in stats.sources_count.items():
             source_table.add_row(src.capitalize(), str(cnt))
         console.print(source_table)
+
+    # Desglose por modalidad
+    if stats.modality_count:
+        mod_table = Table(title="Distribución por Modalidad", border_style="dim")
+        mod_table.add_column("Modalidad", style="bold")
+        mod_table.add_column("Ofertas", justify="right")
+        for mod, cnt in sorted(stats.modality_count.items(), key=lambda x: x[1], reverse=True):
+            mod_table.add_row(mod, str(cnt))
+        console.print(mod_table)
 
     # Desglose por seniority
     if stats.seniority_count:

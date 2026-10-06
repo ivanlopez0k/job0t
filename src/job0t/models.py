@@ -66,6 +66,8 @@ class FilterOptions(BaseModel):
     only_ai: bool = False
     only_freelance: bool = False
     only_remoto: bool = False
+    modalities: List[str] = Field(default_factory=list)
+    location: Optional[str] = None
     seniority: Optional[Union[str, List[str]]] = None
     export_format: str = "both"  # "xlsx", "csv", "both"
     filename: Optional[str] = None  # Nombre base sin extensión
@@ -86,3 +88,5 @@ class RunStats(BaseModel):
     sources_count: Dict[str, int] = Field(default_factory=dict)
     categories_count: Dict[str, int] = Field(default_factory=dict)
     seniority_count: Dict[str, int] = Field(default_factory=dict)
+    modality_count: Dict[str, int] = Field(default_factory=dict)
+

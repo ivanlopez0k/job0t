@@ -321,3 +321,133 @@ def test_filter_jobs_by_seniority_strict():
     # Sin filtro de seniority incluye todas
     res_none = filter_jobs(jobs, FilterOptions())
     assert len(res_none) == 5
+
+
+def test_filter_jobs_by_modality():
+    job_remoto = Job(title="Dev Remoto", modality="Remoto", remoto=True, url="https://example.com/1", source="test")
+    job_hibrido = Job(title="Dev Hibrido", modality="Híbrido", remoto=False, url="https://example.com/2", source="test")
+    job_presencial = Job(title="Dev Presencial", modality="Presencial", remoto=False, url="https://example.com/3", source="test")
+    job_nd = Job(title="Dev ND", modality="N/D", remoto=False, url="https://example.com/4", source="test")
+
+    jobs = [job_remoto, job_hibrido, job_presencial, job_nd]
+
+    # Solo Remoto
+    res_rem = filter_jobs(jobs, FilterOptions(modalities=["remoto"]))
+    assert len(res_rem) == 1
+    assert res_rem[0].title == "Dev Remoto"
+
+    # Solo Híbrido (sin y con tilde)
+    res_hib = filter_jobs(jobs, FilterOptions(modalities=["hibrido"]))
+    assert len(res_hib) == 1
+    assert res_hib[0].title == "Dev Hibrido"
+
+    # Solo Presencial
+    res_pres = filter_jobs(jobs, FilterOptions(modalities=["presencial"]))
+    assert len(res_pres) == 1
+    assert res_pres[0].title == "Dev Presencial"
+
+    # Remoto + Híbrido
+    res_multi = filter_jobs(jobs, FilterOptions(modalities=["remoto", "hibrido"]))
+    assert len(res_multi) == 2
+    assert {j.title for j in res_multi} == {"Dev Remoto", "Dev Hibrido"}
+
+    # Todas las modalidades (las 3 juntas = sin filtro)
+    res_all = filter_jobs(jobs, FilterOptions(modalities=["remoto", "hibrido", "presencial"]))
+    assert len(res_all) == 4
+
+    # Compatibilidad con bandera legacy only_remoto
+    res_legacy = filter_jobs(jobs, FilterOptions(only_remoto=True))
+    assert len(res_legacy) == 1
+    assert res_legacy[0].title == "Dev Remoto"
+
+
+def test_filter_jobs_by_location_presencial_and_hybrid():
+    job_cba = Job(title="Dev Cba", location="Córdoba, Córdoba", modality="Presencial", url="https://example.com/1", source="computrabajo")
+    job_bsas = Job(title="Dev BsAs", location="Capital Federal, Buenos Aires", modality="Híbrido", url="https://example.com/2", source="computrabajo")
+    job_chile = Job(title="Dev Chile", location="Santiago, Chile", modality="Presencial", url="https://example.com/3", source="getonboard")
+
+    jobs = [job_cba, job_bsas, job_chile]
+
+    # Filtrar por Córdoba (debe coincidir ignorando tildes y mayúsculas)
+    res_cba = filter_jobs(jobs, FilterOptions(location="cordoba"))
+    assert len(res_cba) == 1
+    assert res_cba[0].title == "Dev Cba"
+
+    # Filtrar por Argentina (debe incluir ofertas de provincias argentinas / Computrabajo)
+    res_arg = filter_jobs(jobs, FilterOptions(location="argentina"))
+    assert len(res_arg) == 2
+    assert {j.title for j in res_arg} == {"Dev Cba", "Dev BsAs"}
+
+    # Filtrar por Chile
+    res_chile = filter_jobs(jobs, FilterOptions(location="chile"))
+    assert len(res_chile) == 1
+    assert res_chile[0].title == "Dev Chile"
+
+
+def test_filter_jobs_by_location_remoto():
+    job_remote_global = Job(
+        title="Dev Global",
+        location="Worldwide / Remoto",
+        modality="Remoto",
+        remoto=True,
+        url="https://example.com/1",
+        source="remoteok",
+    )
+    job_remote_latam = Job(
+        title="Dev LatAm",
+        location="Cualquier lugar / LatAm",
+        modality="Remoto",
+        remoto=True,
+        url="https://example.com/2",
+        source="getonboard",
+    )
+    job_remote_arg = Job(
+        title="Dev Arg",
+        location="Argentina",
+        modality="Remoto",
+        remoto=True,
+        url="https://example.com/3",
+        source="getonboard",
+    )
+    job_remote_usa_restricted = Job(
+        title="Dev USA Only",
+        location="USA Only",
+        modality="Remoto",
+        remoto=True,
+        url="https://example.com/4",
+        source="remoteok",
+    )
+
+    jobs = [job_remote_global, job_remote_latam, job_remote_arg, job_remote_usa_restricted]
+
+    # Búsqueda en Argentina: acepta globales, LatAm y Argentina; excluye USA Only
+    res_arg = filter_jobs(jobs, FilterOptions(location="argentina"))
+    assert len(res_arg) == 3
+    assert {j.title for j in res_arg} == {"Dev Global", "Dev LatAm", "Dev Arg"}
+
+    # Búsqueda acotada a Córdoba: acepta remotas válidas para Argentina
+    res_cba = filter_jobs(jobs, FilterOptions(location="cordoba"))
+    assert len(res_cba) == 3
+    assert {j.title for j in res_cba} == {"Dev Global", "Dev LatAm", "Dev Arg"}
+
+    # Búsqueda acotada a USA: acepta vacante USA Only y Globales
+    res_usa = filter_jobs(jobs, FilterOptions(location="usa"))
+    assert len(res_usa) == 2
+    assert {j.title for j in res_usa} == {"Dev Global", "Dev USA Only"}
+
+
+def test_filter_jobs_combined_modality_and_location():
+    job_pres_cba = Job(title="Pres Cba", location="Córdoba, Córdoba", modality="Presencial", url="https://example.com/1", source="computrabajo")
+    job_pres_bsas = Job(title="Pres BsAs", location="Buenos Aires", modality="Presencial", url="https://example.com/2", source="computrabajo")
+    job_rem_global = Job(title="Rem Global", location="Worldwide", modality="Remoto", remoto=True, url="https://example.com/3", source="remoteok")
+    job_hib_cba = Job(title="Hib Cba", location="Córdoba", modality="Híbrido", url="https://example.com/4", source="computrabajo")
+
+    jobs = [job_pres_cba, job_pres_bsas, job_rem_global, job_hib_cba]
+
+    # Modalidad Presencial + Remoto, ubicación Córdoba:
+    # Debe conservar Presencial Córdoba y Remoto Global, descartando Presencial Buenos Aires e Híbrido
+    opts = FilterOptions(modalities=["presencial", "remoto"], location="cordoba")
+    res = filter_jobs(jobs, opts)
+    assert len(res) == 2
+    assert {j.title for j in res} == {"Pres Cba", "Rem Global"}
+

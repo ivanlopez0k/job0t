@@ -122,6 +122,7 @@ class PipelineRunner:
         for j in unique_jobs:
             stats.sources_count[j.source] = stats.sources_count.get(j.source, 0) + 1
             stats.seniority_count[j.seniority] = stats.seniority_count.get(j.seniority, 0) + 1
+            stats.modality_count[j.modality] = stats.modality_count.get(j.modality, 0) + 1
             for cat in j.categories:
                 stats.categories_count[cat] = stats.categories_count.get(cat, 0) + 1
 

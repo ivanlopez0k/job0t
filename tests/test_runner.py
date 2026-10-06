@@ -238,3 +238,47 @@ def test_pipeline_runner_custom_filename_with_and_without_extension(tmp_path: Pa
     assert xlsx2 is not None and xlsx2.name == "busqueda_2026-10-04.xlsx"
     assert csv2 is not None and csv2.name == "busqueda_2026-10-04.csv"
 
+
+def test_pipeline_runner_with_modality_and_location_filter(tmp_path: Path):
+    raw_jobs = [
+        RawJob(
+            title="Backend Python Remoto",
+            description="Python",
+            location="Argentina",
+            modality="Remoto",
+            url="https://getonboard.com/job/1",
+            source="getonboard",
+        ),
+        RawJob(
+            title="Frontend React Presencial",
+            description="React",
+            location="Córdoba",
+            modality="Presencial",
+            url="https://computrabajo.com/job/2",
+            source="computrabajo",
+        ),
+        RawJob(
+            title="Dev USA Only",
+            description="Node",
+            location="USA Only",
+            modality="Remoto",
+            url="https://remoteok.com/job/3",
+            source="remoteok",
+        ),
+    ]
+
+    runner = PipelineRunner(scrapers=[MockScraper("mixed", raw_jobs)])
+    options = FilterOptions(
+        modalities=["remoto"],
+        location="argentina",
+        output_dir=str(tmp_path),
+    )
+
+    xlsx_path, csv_path, stats = runner.run(options)
+    assert stats.total_raw == 3
+    assert stats.total_filtered == 1
+    assert stats.total_unique == 1
+    assert stats.modality_count.get("Remoto") == 1
+    assert xlsx_path.exists()
+
+
